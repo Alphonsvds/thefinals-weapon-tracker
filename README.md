@@ -1,45 +1,47 @@
-THE FINALS // Weapons Tracker
+ # THE FINALS // Weapons Tracker
 
-A comprehensive, interactive dashboard for visualizing weapon statistics, Time-to-Kill (TTK), and meta rankings for The Finals.
+ A comprehensive, interactive dashboard for visualizing weapon statistics, Time-to-Kill (TTK), and meta rankings for The Finals.
 
-Features
+ Live demo: https://alphonsvds.github.io/thefinals-weapon-tracker/
 
-Interactive Dashboard: View detailed stats for every weapon, including Damage, Fire Rate, DPS, Reload Speed, and Mag Size.
+ ## Features
 
-TTK Analysis: Automatically calculates and ranks weapons by "Fastest Time-to-Kill" against Light, Medium, and Heavy builds.
+ Interactive Dashboard: View detailed stats for every weapon, including Damage, Fire Rate, DPS, Reload Speed, and Mag Size.
 
-Meta Tier List: Dynamic S/A/B/C/D tier list based on TTK performance.
+ TTK Analysis: Automatically calculates and ranks weapons by "Fastest Time-to-Kill" against Light, Medium, and Heavy builds.
 
-Damage Profiles: Visualizes Body vs. Headshot damage and effective range drop-off.
+ Meta Tier List: Dynamic S/A/B/C/D tier list based on TTK performance.
 
-Version Control: Built-in support for different patch versions (currently defaults to v8.3.0).
+ Damage Profiles: Visualizes Body vs. Headshot damage and effective range drop-off.
 
-Custom Data Upload: Drag & Drop support for Zafferman's weapon data spreadsheets (.xlsx or .csv) to update stats instantly.
+ Version Control: Built-in support for different patch versions (currently defaults to v8.3.0).
 
-Usage
+ Custom Data Upload: Drag & Drop support for Zafferman's weapon data spreadsheets (.xlsx or .csv) to update stats instantly.
 
-This project is built as a Single File Application.
+ ## Usage
 
-Simply download the_finals_tracker.html.
+ This project is built as a Single File Application.
 
-Open the file in any modern web browser (Chrome, Edge, Firefox).
+ Simply download the_finals_tracker.html.
 
-No server, Node.js, or installation required.
+ Open the file in any modern web browser (Chrome, Edge, Firefox).
 
-Updating Data
+ No server, Node.js, or installation required.
 
-Default: The tracker comes pre-loaded with Patch 8.3.0 data.
+ ## Updating Data
 
-Manual Update: To load newer data:
+ Default: The tracker comes pre-loaded with Patch 8.3.0 data.
 
-Click the "Patch Version" dropdown in the top right.
+ Manual Update: To load newer data:
 
-Select "Admin: Upload New Data".
+ Click the "Patch Version" dropdown in the top right.
 
-Drag and drop the updated "Summary" spreadsheet/CSV into the upload zone.
+ Select "Admin: Upload New Data".
 
-Credits
+ Drag and drop the updated "Summary" spreadsheet/CSV into the upload zone.
 
-Data Source: Zafferman's Weapon Master Sheet
+ ## Credits
 
-Tech Stack: React, Tailwind CSS, SheetJS (XLSX).
+ Data Source: Zafferman's Weapon Master Sheet
+
+ Tech Stack: React, Tailwind CSS, SheetJS (XLSX).
