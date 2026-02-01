@@ -15,9 +15,6 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- SheetJS for parsing Excel/CSV -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-
     <!-- App Configuration -->
     <script>
         tailwind.config = {
@@ -172,14 +169,6 @@
             </svg>
         );
 
-        const Upload = (props) => (
-            <IconBase {...props}>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-            </IconBase>
-        );
-
         const Crosshair = (props) => (
             <IconBase {...props}>
                 <circle cx="12" cy="12" r="10" />
@@ -244,22 +233,6 @@
             </IconBase>
         );
 
-        // --- Helper: Data Parsing ---
-        const cleanNumber = (val) => {
-            if (typeof val === 'number') return val;
-            if (!val) return 0;
-            const str = val.toString();
-            // Handle new lines, brackets, etc.
-            const firstPart = str.split('\n')[0].split('(')[0];
-            const num = parseFloat(firstPart.replace(/[^\d.-]/g, ''));
-            return isNaN(num) ? 0 : num;
-        };
-
-        const calculateDPS = (dmg, rpm) => {
-            if (!dmg || !rpm) return "N/A";
-            return ((dmg * rpm) / 60).toFixed(0);
-        };
-
         const App = () => {
             // Version State
             const [versions, setVersions] = useState({
@@ -275,9 +248,7 @@
             // Stats Target State
             const [statsTarget, setStatsTarget] = useState('MEDIUM');
 
-            // Admin/Upload State
-            const [dragActive, setDragActive] = useState(false);
-            const [showUpload, setShowUpload] = useState(false); // Hidden by default
+            // UI State
             const [versionOpen, setVersionOpen] = useState(false);
 
             // Effect: Update weapons when version changes
@@ -287,113 +258,6 @@
                 }
             }, [currentVersion, versions]);
 
-            // --- File Handling ---
-            const handleDrag = useCallback((e) => {
-                if (!showUpload) return; // Disable drag if upload hidden
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.type === "dragenter" || e.type === "dragover") {
-                    setDragActive(true);
-                } else if (e.type === "dragleave") {
-                    setDragActive(false);
-                }
-            }, [showUpload]);
-
-            const processFile = (file) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const data = e.target.result;
-                    let workbook;
-                    try {
-                        workbook = XLSX.read(data, { type: 'binary' });
-                    } catch (err) {
-                        console.error("Error reading file", err);
-                        alert("Could not parse file. Make sure it is a valid Excel or CSV file.");
-                        return;
-                    }
-
-                    const sheetName = workbook.SheetNames.find(n => n.toUpperCase().includes("SUMMARY")) || workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-                    const newWeapons = parseData(jsonData);
-                    
-                    // Create a "Custom" version
-                    const customVer = `Custom (${file.name.substring(0, 10)}...)`;
-                    setVersions(prev => ({ ...prev, [customVer]: newWeapons }));
-                    setCurrentVersion(customVer);
-                    setDragActive(false);
-                };
-                reader.readAsBinaryString(file);
-            };
-
-            const parseData = (rows) => {
-                const parsedWeapons = [];
-                let currentClass = null;
-
-                // Headers in Zafferman's 8.3.0 Summary:
-                // 0: Name (implied), 1: Body Dmg, 2: Head Dmg, 3: RPM, 4: Mag Size
-                // 6: Empty Reload, 7: Tac Reload
-                // 10: TTK Light, 12: TTK Med, 14: TTK Heavy
-                // 22: Min Range, 23: Max Range
-                
-                rows.forEach((row, index) => {
-                    if (!row || row.length === 0) return;
-
-                    const firstCell = row[0]?.toString().toUpperCase().trim();
-
-                    if (firstCell === "LIGHT") { currentClass = "LIGHT"; return; }
-                    if (firstCell === "MEDIUM") { currentClass = "MEDIUM"; return; }
-                    if (firstCell === "HEAVY") { currentClass = "HEAVY"; return; }
-                    
-                    if (firstCell === "BODY DAMAGE" || !currentClass || !row[0]) return;
-
-                    const name = row[0];
-                    const bodyDmg = cleanNumber(row[1]);
-                    const headDmg = cleanNumber(row[2]);
-                    const rpm = cleanNumber(row[3]);
-                    // Clean mag size (remove parens if any)
-                    const rawMag = row[4];
-                    const mag = rawMag ? cleanNumber(rawMag) : 0;
-                    
-                    const reload = cleanNumber(row[6]); // Empty reload
-                    
-                    const ttkLight = cleanNumber(row[10]);
-                    const ttkMed = cleanNumber(row[12]);
-                    const ttkHeavy = cleanNumber(row[14]);
-
-                    const rangeStart = row[22] || "N/A";
-                    const rangeEnd = row[23] || "N/A";
-
-                    if (!name || name === '-') return;
-
-                    parsedWeapons.push({
-                        name: name,
-                        class: currentClass,
-                        bodyDmg: bodyDmg,
-                        headDmg: headDmg,
-                        rpm: rpm,
-                        mag: mag,
-                        reload: reload,
-                        ttkLight: ttkLight,
-                        ttkMed: ttkMed,
-                        ttkHeavy: ttkHeavy,
-                        dps: calculateDPS(bodyDmg, rpm),
-                        rangeStart: rangeStart,
-                        rangeEnd: rangeEnd
-                    });
-                });
-                return parsedWeapons;
-            };
-
-            const handleDrop = useCallback((e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setDragActive(false);
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    processFile(e.dataTransfer.files[0]);
-                }
-            }, []);
 
             // --- Stats Calculation ---
             const getBestStats = (weaponClass, targetKey) => {
@@ -660,16 +524,6 @@
                                     {currentVersion === ver && <Check size={14} className="text-finals-red" />}
                                 </button>
                             ))}
-                            {/* Secret Admin Toggle */}
-                            <button 
-                                onClick={() => {
-                                    setShowUpload(!showUpload);
-                                    setVersionOpen(false);
-                                }}
-                                className="w-full text-left px-4 py-2 bg-finals-dark text-[10px] text-finals-dim hover:text-finals-red uppercase tracking-widest font-bold border-t border-white/10"
-                            >
-                                {showUpload ? "Hide Admin Upload" : "Admin: Upload New Data"}
-                            </button>
                         </div>
                     )}
                 </div>
@@ -680,13 +534,7 @@
                     <div className="fixed inset-0 dashed-bg pointer-events-none z-0"></div>
                     
                     {/* Header */}
-                    <div 
-                        className={`relative z-10 p-8 border-b-4 transition-colors duration-300 bg-finals-black border-finals-red`}
-                        onDragEnter={handleDrag}
-                        onDragLeave={handleDrag}
-                        onDragOver={handleDrag}
-                        onDrop={handleDrop}
-                    >
+                    <div className="relative z-10 p-8 border-b-4 bg-finals-black border-finals-red">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div>
                                 <h1 className="text-5xl md:text-7xl font-black tracking-normal italic text-white mb-2">
@@ -706,19 +554,7 @@
                                 </p>
                             </div>
 
-                            <div className="flex flex-col items-end gap-4">
-                                <VersionSelector />
-                                
-                                {showUpload && (
-                                    <div className={`border-2 border-dashed p-4 rounded flex items-center gap-4 transition-all ${dragActive ? 'border-finals-red bg-finals-red/10' : 'border-finals-dim/30 hover:border-finals-text/50'}`}>
-                                        <Upload className={dragActive ? "text-finals-red" : "text-finals-dim"} />
-                                        <div className="text-right">
-                                            <div className="text-xs font-bold text-white uppercase">Upload CSV/XLSX</div>
-                                            <div className="text-[10px] text-finals-dim">Drag file to parse new version</div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            <VersionSelector />
                         </div>
                     </div>
 
@@ -891,14 +727,6 @@
 
                     </div>
                     
-                    {/* Drag Overlay Indicator */}
-                    {dragActive && showUpload && (
-                        <div className="fixed inset-0 bg-finals-red/20 backdrop-blur-sm z-50 flex items-center justify-center border-8 border-finals-red border-dashed m-8 rounded-lg pointer-events-none">
-                            <div className="text-6xl font-black text-white italic tracking-tighter animate-pulse">
-                                DROP TO UPLOAD
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         };
