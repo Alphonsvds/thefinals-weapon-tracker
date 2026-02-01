@@ -28,10 +28,10 @@
                             black: '#101010',
                             dark: '#1a1a1a',
                             panel: '#262626',
-                            red: '#ff4757', // Brighter red for accessibility
+                            red: '#e63946', // Brighter red for accessibility
                             text: '#e8e8e8',
                             dim: '#888888',
-                            tierS: '#ff4757',
+                            tierS: '#e63946',
                             tierA: '#ff9f0a',
                             tierB: '#f2f2f2',
                             tierC: '#888888',
@@ -65,7 +65,7 @@
             background: #1a1a1a;
         }
         ::-webkit-scrollbar-thumb {
-            background: #ff4757;
+            background: #e63946;
             border-radius: 2px;
         }
         .finals-card {
@@ -75,7 +75,7 @@
             transition: all 0.2s ease;
         }
         .finals-card:hover {
-            border-left: 4px solid #ff4757;
+            border-left: 4px solid #e63946;
             transform: translateX(4px);
         }
         .dashed-bg {
@@ -597,16 +597,16 @@
                                     <line x1="75" y1="0" x2="75" y2="100" stroke="#333" strokeWidth="0.5" strokeDasharray="2,2" />
 
                                     {/* Fill area */}
-                                    <path d={fillD} fill="rgba(255, 71, 87, 0.2)" />
+                                    <path d={fillD} fill="rgba(230, 57, 70, 0.2)" />
 
                                     {/* Damage curve line */}
-                                    <path d={pathD} fill="none" stroke="#ff4757" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                                    <path d={pathD} fill="none" stroke="#e63946" strokeWidth="2" vectorEffect="non-scaling-stroke" />
 
                                     {/* Dropoff start marker */}
                                     <circle cx={minRangePct} cy={0} r="3" fill="#fff" vectorEffect="non-scaling-stroke" />
 
                                     {/* Dropoff end marker */}
-                                    <circle cx={maxRangePct} cy={100 - minDmgPct} r="3" fill="#ff4757" vectorEffect="non-scaling-stroke" />
+                                    <circle cx={maxRangePct} cy={100 - minDmgPct} r="3" fill="#e63946" vectorEffect="non-scaling-stroke" />
                                 </svg>
                             </div>
 
