@@ -108,50 +108,50 @@
         const { useState, useEffect, useMemo, useCallback } = React;
 
         // --- HARDCODED VERSION DATA (v8.3.0) ---
-        // Corrected Classifications based on Summary Sheet
+        // Data sourced from Zafferman's Weapon Master Sheet v8.3.0
         const DATA_V8_3_0 = [
             // LIGHT
-            { name: "93R", class: "LIGHT", bodyDmg: 26, headDmg: 39, rpm: 1000, mag: 24, reload: 1.75, ttkLight: 0.52, ttkMed: 1.19, ttkHeavy: 1.64, dps: 260, rangeStart: "10m", rangeEnd: "20m" },
-            { name: "ARN-220", class: "LIGHT", bodyDmg: 17, headDmg: 25.5, rpm: 725, mag: 30, reload: 2.8, ttkLight: 0.66, ttkMed: 1.16, ttkHeavy: 1.66, dps: 205, rangeStart: "37.5m", rangeEnd: "45m" },
-            { name: "LH1", class: "LIGHT", bodyDmg: 44, headDmg: 88, rpm: 280, mag: 15, reload: 2.6, ttkLight: 0.67, ttkMed: 1.11, ttkHeavy: 1.56, dps: 205, rangeStart: "40m", rangeEnd: "50m" },
-            { name: "M11", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 1000, mag: 40, reload: 1.7, ttkLight: 0.54, ttkMed: 0.90, ttkHeavy: 1.26, dps: 267, rangeStart: "10m", rangeEnd: "20m" },
-            { name: "M26 Matter", class: "LIGHT", bodyDmg: 121, headDmg: 121, rpm: 85, mag: 8, reload: 3.0, ttkLight: 0.7, ttkMed: 1.4, ttkHeavy: 1.4, dps: 171, rangeStart: "10m", rangeEnd: "15m" }, 
-            { name: "Recurve Bow", class: "LIGHT", bodyDmg: 120, headDmg: 180, rpm: 48, mag: "∞", reload: "N/A", ttkLight: 1.25, ttkMed: 2.5, ttkHeavy: 2.5, dps: 96, rangeStart: "∞", rangeEnd: "∞" },
-            { name: "SH1900", class: "LIGHT", bodyDmg: 195, headDmg: 195, rpm: 100, mag: 2, reload: 2.7, ttkLight: 0.0, ttkMed: 0.75, ttkHeavy: 0.75, dps: 325, rangeStart: "5m", rangeEnd: "10m" },
-            { name: "SR-84", class: "LIGHT", bodyDmg: 118, headDmg: 236, rpm: 46, mag: 6, reload: 3.3, ttkLight: 1.30, ttkMed: 1.30, ttkHeavy: 2.60, dps: 90, rangeStart: "∞", rangeEnd: "∞" },
-            { name: "Throwing Knives", class: "LIGHT", bodyDmg: 60, headDmg: 90, rpm: 60, mag: "∞", reload: "N/A", ttkLight: 0.8, ttkMed: 1.4, ttkHeavy: 1.8, dps: 120, rangeStart: "∞", rangeEnd: "∞" }, 
-            { name: "V9S", class: "LIGHT", bodyDmg: 40, headDmg: 60, rpm: 430, mag: 20, reload: 1.3, ttkLight: 0.5, ttkMed: 1.0, ttkHeavy: 1.33, dps: 286, rangeStart: "10m", rangeEnd: "20m" },
-            { name: "XP-54", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 860, mag: 30, reload: 2.3, ttkLight: 0.63, ttkMed: 1.05, ttkHeavy: 1.47, dps: 229, rangeStart: "15m", rangeEnd: "25m" },
-            { name: "Dagger", class: "LIGHT", bodyDmg: 50, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.2, ttkMed: 2.0, ttkHeavy: 3.0, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" }, 
-            { name: "Sword", class: "LIGHT", bodyDmg: 74, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.0, ttkMed: 1.5, ttkHeavy: 2.5, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" }, 
+            { name: "93R", class: "LIGHT", bodyDmg: 26, headDmg: 39, rpm: 1000, mag: 24, reload: 1.75, ttkLight: 0.52, ttkMed: 1.19, ttkHeavy: 1.64, dps: 433, dropoffMin: 32, dropoffMax: 42, dropoffMod: 0.40 },
+            { name: "ARN-220", class: "LIGHT", bodyDmg: 17, headDmg: 25.5, rpm: 725, mag: 60, reload: 2.80, ttkLight: 0.66, ttkMed: 1.16, ttkHeavy: 1.66, dps: 205, dropoffMin: 37.5, dropoffMax: 45, dropoffMod: 0.72 },
+            { name: "Dagger", class: "LIGHT", bodyDmg: 60, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
+            { name: "LH1", class: "LIGHT", bodyDmg: 44, headDmg: 88, rpm: 280, mag: 15, reload: 2.85, ttkLight: 0.67, ttkMed: 1.11, ttkHeavy: 1.56, dps: 205, dropoffMin: 50, dropoffMax: 55, dropoffMod: 0.72 },
+            { name: "M11", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 1000, mag: 40, reload: 1.85, ttkLight: 0.54, ttkMed: 0.90, ttkHeavy: 1.26, dps: 267, dropoffMin: 10, dropoffMax: 17.5, dropoffMod: 0.52 },
+            { name: "M26 Matter", class: "LIGHT", bodyDmg: 121, headDmg: null, rpm: 85, mag: 8, reload: 2.45, ttkLight: 0.71, ttkMed: 1.41, ttkHeavy: 1.41, dps: 171, dropoffMin: 15, dropoffMax: 25, dropoffMod: 0.64 },
+            { name: "Recurve Bow", class: "LIGHT", bodyDmg: 124, headDmg: 186, rpm: 48, mag: null, reload: null, ttkLight: 1.25, ttkMed: 2.50, ttkHeavy: 2.50, dps: 99, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "SH1900", class: "LIGHT", bodyDmg: 195, headDmg: null, rpm: 80, mag: 2, reload: 2.60, ttkLight: 0.00, ttkMed: 0.75, ttkHeavy: 0.75, dps: 260, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "SR-84", class: "LIGHT", bodyDmg: 118, headDmg: 236, rpm: 40, mag: 6, reload: 3.35, ttkLight: 1.30, ttkMed: 2.61, ttkHeavy: 2.61, dps: 79, dropoffMin: 80, dropoffMax: 100, dropoffMod: 0.75 },
+            { name: "Sword", class: "LIGHT", bodyDmg: 88, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
+            { name: "Throwing Knives", class: "LIGHT", bodyDmg: 60, headDmg: 90, rpm: 545, mag: null, reload: null, ttkLight: 0.78, ttkMed: 1.56, ttkHeavy: 1.67, dps: 545, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "V9S", class: "LIGHT", bodyDmg: 40, headDmg: 60, rpm: 360, mag: 20, reload: 1.50, ttkLight: 0.50, ttkMed: 1.00, ttkHeavy: 1.33, dps: 240, dropoffMin: 10, dropoffMax: 15, dropoffMod: 0.67 },
+            { name: "XP-54", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 860, mag: 34, reload: 2.50, ttkLight: 0.63, ttkMed: 1.05, ttkHeavy: 1.47, dps: 229, dropoffMin: 22.5, dropoffMax: 32.5, dropoffMod: 0.52 },
 
             // MEDIUM
-            { name: "AKM", class: "MEDIUM", bodyDmg: 20, headDmg: 30, rpm: 600, mag: 36, reload: 2.2, ttkLight: 0.70, ttkMed: 1.20, ttkHeavy: 1.70, dps: 200, rangeStart: "25m", rangeEnd: "35m" },
-            { name: "CB-01 Repeater", class: "MEDIUM", bodyDmg: 88, headDmg: 132, rpm: 77, mag: 8, reload: 3.5, ttkLight: 0.78, ttkMed: 1.56, ttkHeavy: 2.34, dps: 113, rangeStart: "25m", rangeEnd: "40m" },
-            { name: "Cerberus 12GA", class: "MEDIUM", bodyDmg: 99, headDmg: 99, rpm: 100, mag: 6, reload: 2.9, ttkLight: 0.6, ttkMed: 1.2, ttkHeavy: 1.8, dps: 165, rangeStart: "8m", rangeEnd: "15m" },
-            { name: "CL-40", class: "MEDIUM", bodyDmg: 100, headDmg: 100, rpm: 75, mag: 4, reload: 3.4, ttkLight: 0.8, ttkMed: 2.4, ttkHeavy: 3.2, dps: 125, rangeStart: "N/A", rangeEnd: "N/A" },
-            { name: "FAMAS", class: "MEDIUM", bodyDmg: 23, headDmg: 34.5, rpm: 630, mag: 27, reload: 2.5, ttkLight: 0.67, ttkMed: 1.15, ttkHeavy: 1.55, dps: 241, rangeStart: "30m", rangeEnd: "40m" },
-            { name: "FCAR", class: "MEDIUM", bodyDmg: 22, headDmg: 33, rpm: 540, mag: 20, reload: 1.8, ttkLight: 0.67, ttkMed: 1.22, ttkHeavy: 1.66, dps: 198, rangeStart: "30m", rangeEnd: "40m" },
-            { name: "Model 1887", class: "MEDIUM", bodyDmg: 108, headDmg: 108, rpm: 69, mag: 6, reload: 3.6, ttkLight: 0.87, ttkMed: 0.87, ttkHeavy: 1.74, dps: 124, rangeStart: "10m", rangeEnd: "15m" },
-            { name: "P90", class: "MEDIUM", bodyDmg: 14, headDmg: 21, rpm: 900, mag: 50, reload: 2.1, ttkLight: 0.67, ttkMed: 1.13, ttkHeavy: 1.6, dps: 210, rangeStart: "10m", rangeEnd: "20m" },
-            { name: "Pike .556", class: "MEDIUM", bodyDmg: 48, headDmg: 72, rpm: 200, mag: 12, reload: 2.3, ttkLight: 0.9, ttkMed: 1.5, ttkHeavy: 2.1, dps: 160, rangeStart: "50m", rangeEnd: "60m" },
-            { name: "R.357", class: "MEDIUM", bodyDmg: 74, headDmg: 148, rpm: 140, mag: 6, reload: 2.2, ttkLight: 0.85, ttkMed: 1.28, ttkHeavy: 1.71, dps: 172, rangeStart: "25m", rangeEnd: "35m" },
-            { name: "Dual Blades", class: "MEDIUM", bodyDmg: 40, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.2, ttkMed: 2.0, ttkHeavy: 3.0, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
-            { name: "Riot Shield", class: "MEDIUM", bodyDmg: 84, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.5, ttkMed: 2.5, ttkHeavy: 3.5, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
+            { name: "AKM", class: "MEDIUM", bodyDmg: 20, headDmg: 30, rpm: 600, mag: 32, reload: 2.35, ttkLight: 0.70, ttkMed: 1.20, ttkHeavy: 1.70, dps: 200, dropoffMin: 30, dropoffMax: 37.5, dropoffMod: 0.55 },
+            { name: "CB-01 Repeater", class: "MEDIUM", bodyDmg: 88, headDmg: 132, rpm: null, mag: 8, reload: 5.05, ttkLight: 0.78, ttkMed: 1.56, ttkHeavy: 2.34, dps: null, dropoffMin: 40, dropoffMax: 45, dropoffMod: 0.69 },
+            { name: "Cerberus 12GA", class: "MEDIUM", bodyDmg: 99, headDmg: null, rpm: 100, mag: 3, reload: 2.95, ttkLight: 0.60, ttkMed: 1.20, ttkHeavy: null, dps: 165, dropoffMin: 10, dropoffMax: 17.5, dropoffMod: 0.63 },
+            { name: "CL-40", class: "MEDIUM", bodyDmg: 100, headDmg: null, rpm: 75, mag: 5, reload: 3.95, ttkLight: 0.80, ttkMed: 1.60, ttkHeavy: 2.40, dps: 125, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "Dual Blades", class: "MEDIUM", bodyDmg: 50, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
+            { name: "FAMAS", class: "MEDIUM", bodyDmg: 23, headDmg: 34.5, rpm: 1080, mag: 27, reload: 2.60, ttkLight: 0.76, ttkMed: 1.20, ttkHeavy: 1.91, dps: 414, dropoffMin: 35, dropoffMax: 42.5, dropoffMod: 0.50 },
+            { name: "FCAR", class: "MEDIUM", bodyDmg: 22, headDmg: 33, rpm: 540, mag: 25, reload: 2.10, ttkLight: 0.67, ttkMed: 1.22, ttkHeavy: 1.67, dps: 198, dropoffMin: 35, dropoffMax: 40, dropoffMod: 0.55 },
+            { name: "Model 1887", class: "MEDIUM", bodyDmg: 108, headDmg: null, rpm: 69, mag: 7, reload: 4.30, ttkLight: 0.87, ttkMed: 1.74, ttkHeavy: 2.61, dps: 124, dropoffMin: 20, dropoffMax: 30, dropoffMod: 0.65 },
+            { name: "P90", class: "MEDIUM", bodyDmg: 14, headDmg: 21, rpm: 900, mag: 50, reload: 2.70, ttkLight: 0.67, ttkMed: 1.13, ttkHeavy: 1.60, dps: 210, dropoffMin: 10, dropoffMax: 20, dropoffMod: 0.62 },
+            { name: "Pike .556", class: "MEDIUM", bodyDmg: 48, headDmg: 72, rpm: 200, mag: 12, reload: 3.25, ttkLight: 0.90, ttkMed: 1.50, ttkHeavy: 2.10, dps: 160, dropoffMin: 40, dropoffMax: 50, dropoffMod: 0.80 },
+            { name: "R.357", class: "MEDIUM", bodyDmg: 74, headDmg: 148, rpm: 140, mag: 6, reload: 2.50, ttkLight: 0.86, ttkMed: 1.29, ttkHeavy: 1.71, dps: 173, dropoffMin: 27.5, dropoffMax: 44, dropoffMod: 0.40 },
+            { name: "Riot Shield", class: "MEDIUM", bodyDmg: 90, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
 
             // HEAVY
-            { name: ".50 Akimbo", class: "HEAVY", bodyDmg: 44, headDmg: 88, rpm: 230, mag: 14, reload: 2.8, ttkLight: 0.78, ttkMed: 1.3, ttkHeavy: 1.8, dps: 169, rangeStart: "15m", rangeEnd: "25m" },
-            { name: "BFR Titan", class: "HEAVY", bodyDmg: 90, headDmg: 135, rpm: 75, mag: 5, reload: 3.0, ttkLight: 0.8, ttkMed: 1.6, ttkHeavy: 2.4, dps: 112, rangeStart: "25m", rangeEnd: "35m" },
-            { name: "Flamethrower", class: "HEAVY", bodyDmg: 30, headDmg: 30, rpm: 170, mag: 30, reload: 3.5, ttkLight: 1.41, ttkMed: 2.82, ttkHeavy: 3.88, dps: 85, rangeStart: "8m", rangeEnd: "11m" },
-            { name: "KS-23", class: "HEAVY", bodyDmg: 100, headDmg: 100, rpm: 78, mag: 6, reload: 3.2, ttkLight: 0.77, ttkMed: 1.54, ttkHeavy: 2.3, dps: 130, rangeStart: "15m", rangeEnd: "25m" },
-            { name: "Lewis Gun", class: "HEAVY", bodyDmg: 22, headDmg: 33, rpm: 500, mag: 47, reload: 3.5, ttkLight: 0.72, ttkMed: 1.32, ttkHeavy: 1.80, dps: 183, rangeStart: "25m", rangeEnd: "35m" },
-            { name: "M134 Minigun", class: "HEAVY", bodyDmg: 18, headDmg: 27, rpm: 900, mag: 350, reload: 4.0, ttkLight: 0.52, ttkMed: 0.88, ttkHeavy: 1.24, dps: 270, rangeStart: "30m", rangeEnd: "50m" },
-            { name: "M60", class: "HEAVY", bodyDmg: 20, headDmg: 30, rpm: 580, mag: 70, reload: 3.5, ttkLight: 0.72, ttkMed: 1.24, ttkHeavy: 1.76, dps: 193, rangeStart: "25m", rangeEnd: "35m" },
-            { name: "MGL-32", class: "HEAVY", bodyDmg: 83, headDmg: 83, rpm: 90, mag: 6, reload: 3.1, ttkLight: 0.67, ttkMed: 2.0, ttkHeavy: 2.67, dps: 124, rangeStart: "N/A", rangeEnd: "N/A" },
-            { name: "SA1216", class: "HEAVY", bodyDmg: 72, headDmg: 72, rpm: 190, mag: 16, reload: 3.25, ttkLight: 0.63, ttkMed: 0.95, ttkHeavy: 1.45, dps: 228, rangeStart: "8m", rangeEnd: "12m" },
-            { name: "ShAK-50", class: "HEAVY", bodyDmg: 30, headDmg: 45, rpm: 420, mag: 20, reload: 3.3, ttkLight: 0.57, ttkMed: 1.14, ttkHeavy: 1.57, dps: 210, rangeStart: "20m", rangeEnd: "30m" },
-            { name: "Sledgehammer", class: "HEAVY", bodyDmg: 115, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 0.8, ttkMed: 1.5, ttkHeavy: 2.2, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
-            { name: "Spear", class: "HEAVY", bodyDmg: 65, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.0, ttkMed: 1.8, ttkHeavy: 2.5, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
+            { name: ".50 Akimbo", class: "HEAVY", bodyDmg: 44, headDmg: 88, rpm: 230, mag: 14, reload: 3.00, ttkLight: 0.78, ttkMed: 1.30, ttkHeavy: 1.83, dps: 169, dropoffMin: 32, dropoffMax: 39, dropoffMod: 0.50 },
+            { name: "BFR Titan", class: "HEAVY", bodyDmg: 90, headDmg: 135, rpm: 75, mag: 5, reload: 5.00, ttkLight: 0.80, ttkMed: 1.60, ttkHeavy: 2.40, dps: 112, dropoffMin: 30, dropoffMax: 45, dropoffMod: 0.70 },
+            { name: "Flamethrower", class: "HEAVY", bodyDmg: 30, headDmg: null, rpm: 170, mag: 30, reload: 3.55, ttkLight: 1.41, ttkMed: 2.82, ttkHeavy: 3.88, dps: 85, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "KS-23", class: "HEAVY", bodyDmg: 100, headDmg: null, rpm: 78, mag: 6, reload: 5.55, ttkLight: 0.77, ttkMed: 1.54, ttkHeavy: 2.31, dps: 130, dropoffMin: 18, dropoffMax: 23, dropoffMod: 0.70 },
+            { name: "Lewis Gun", class: "HEAVY", bodyDmg: 22, headDmg: 33, rpm: 500, mag: 47, reload: 3.55, ttkLight: 0.72, ttkMed: 1.32, ttkHeavy: 1.80, dps: 183, dropoffMin: 35, dropoffMax: 40, dropoffMod: 0.67 },
+            { name: "M134 Minigun", class: "HEAVY", bodyDmg: 11, headDmg: 14.6, rpm: 1500, mag: 250, reload: 5.25, ttkLight: 0.52, ttkMed: 0.88, ttkHeavy: 1.24, dps: 275, dropoffMin: 30, dropoffMax: 50, dropoffMod: 0.53 },
+            { name: "M60", class: "HEAVY", bodyDmg: 20, headDmg: 30, rpm: 580, mag: 70, reload: 3.55, ttkLight: 0.72, ttkMed: 1.24, ttkHeavy: 1.76, dps: 193, dropoffMin: 25, dropoffMax: 35, dropoffMod: 0.50 },
+            { name: "MGL-32", class: "HEAVY", bodyDmg: 83, headDmg: null, rpm: 90, mag: 6, reload: 3.10, ttkLight: 0.67, ttkMed: 2.00, ttkHeavy: 2.67, dps: 124, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "SA1216", class: "HEAVY", bodyDmg: 72, headDmg: null, rpm: 190, mag: 16, reload: 3.25, ttkLight: 0.63, ttkMed: 0.95, ttkHeavy: 1.75, dps: 228, dropoffMin: 12.5, dropoffMax: 20, dropoffMod: 0.67 },
+            { name: "ShAK-50", class: "HEAVY", bodyDmg: 30, headDmg: 45, rpm: 420, mag: 20, reload: 3.20, ttkLight: 0.57, ttkMed: 1.14, ttkHeavy: 1.57, dps: 210, dropoffMin: 15, dropoffMax: 25, dropoffMod: 0.67 },
+            { name: "Sledgehammer", class: "HEAVY", bodyDmg: 100, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
+            { name: "Spear", class: "HEAVY", bodyDmg: 65, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
         ];
         
         // --- Icon Components (Inline SVGs) ---
@@ -405,7 +405,7 @@
                     .sort((a, b) => a[targetKey] - b[targetKey])[0];
 
                 const highestDPS = [...classWeapons]
-                    .filter(w => w.dps !== "N/A")
+                    .filter(w => w.dps !== null && w.dps !== undefined && w.dps !== "N/A")
                     .sort((a, b) => parseFloat(b.dps) - parseFloat(a.dps))[0];
 
                 return { fastestTTK, highestDPS };
@@ -425,11 +425,11 @@
                 if (filterClass !== 'ALL') {
                     filtered = weapons.filter(w => w.class === filterClass);
                 }
-                // Sort by TTK (Med) ascending by default as requested
-                // Move 0 (instant/invalid) or N/A to bottom
+                // Sort by TTK (Med) ascending by default
+                // Put melee weapons (null TTK) at the bottom
                 return [...filtered].sort((a, b) => {
-                    const tA = a.ttkMed || 99;
-                    const tB = b.ttkMed || 99;
+                    const tA = a.ttkMed !== null && a.ttkMed !== undefined ? a.ttkMed : 99;
+                    const tB = b.ttkMed !== null && b.ttkMed !== undefined ? b.ttkMed : 99;
                     return tA - tB;
                 });
             }, [weapons, filterClass]);
@@ -437,7 +437,8 @@
             // --- Tier List Calculation ---
             const tiers = useMemo(() => {
                 const key = tierTarget === 'LIGHT' ? 'ttkLight' : tierTarget === 'HEAVY' ? 'ttkHeavy' : 'ttkMed';
-                let valid = weapons.filter(w => w[key] >= 0);
+                // Filter out weapons with null/undefined TTK (melee weapons)
+                let valid = weapons.filter(w => w[key] !== null && w[key] !== undefined && w[key] >= 0);
                 valid.sort((a, b) => a[key] - b[key]);
 
                 if (valid.length === 0) return { S: [], A: [], B: [], C: [], D: [] };
@@ -447,7 +448,7 @@
                 const aCount = Math.ceil(total * 0.20);
                 const bCount = Math.ceil(total * 0.30);
                 const cCount = Math.ceil(total * 0.20);
-                
+
                 return {
                     S: valid.slice(0, sCount),
                     A: valid.slice(sCount, sCount + aCount),
@@ -525,6 +526,110 @@
                     </div>
                 </div>
             );
+
+            // Damage Dropoff Graph Component
+            const DamageDropoffGraph = ({ weapon }) => {
+                const w = weapon;
+
+                // Handle melee weapons or weapons without dropoff data
+                if (w.isMelee) {
+                    return (
+                        <div>
+                            <div className="text-finals-dim text-[10px] uppercase font-bold mb-1">Range</div>
+                            <div className="bg-finals-dark p-2 rounded text-xs text-center text-finals-dim">
+                                Melee
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (!w.dropoffMin || !w.dropoffMax || !w.dropoffMod) {
+                    return (
+                        <div>
+                            <div className="text-finals-dim text-[10px] uppercase font-bold mb-1">Damage Dropoff</div>
+                            <div className="bg-finals-dark p-2 rounded text-xs text-center text-finals-dim">
+                                No dropoff / Projectile
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Calculate graph dimensions
+                const maxRange = 100; // Max range to display on graph (in meters)
+                const graphWidth = 100; // percentage
+                const graphHeight = 32; // pixels
+
+                // Convert range values to percentages of the graph width
+                const minRangePct = (w.dropoffMin / maxRange) * 100;
+                const maxRangePct = (w.dropoffMax / maxRange) * 100;
+                const minDmgPct = w.dropoffMod * 100; // damage at max range as percentage
+
+                // SVG path for damage curve
+                // Full damage from 0 to dropoffMin, then linear falloff to dropoffMax, then flat
+                const pathD = `
+                    M 0,${100 - 100}
+                    L ${minRangePct},${100 - 100}
+                    L ${maxRangePct},${100 - minDmgPct}
+                    L 100,${100 - minDmgPct}
+                `;
+
+                // Fill path (area under the curve)
+                const fillD = `
+                    M 0,100
+                    L 0,${100 - 100}
+                    L ${minRangePct},${100 - 100}
+                    L ${maxRangePct},${100 - minDmgPct}
+                    L 100,${100 - minDmgPct}
+                    L 100,100
+                    Z
+                `;
+
+                return (
+                    <div>
+                        <div className="text-finals-dim text-[10px] uppercase font-bold mb-1">Damage Dropoff</div>
+                        <div className="bg-finals-dark p-2 rounded">
+                            {/* Graph */}
+                            <div className="relative" style={{height: graphHeight + 'px'}}>
+                                <svg
+                                    viewBox="0 0 100 100"
+                                    preserveAspectRatio="none"
+                                    className="w-full h-full"
+                                    style={{overflow: 'visible'}}
+                                >
+                                    {/* Grid lines */}
+                                    <line x1="25" y1="0" x2="25" y2="100" stroke="#333" strokeWidth="0.5" strokeDasharray="2,2" />
+                                    <line x1="50" y1="0" x2="50" y2="100" stroke="#333" strokeWidth="0.5" strokeDasharray="2,2" />
+                                    <line x1="75" y1="0" x2="75" y2="100" stroke="#333" strokeWidth="0.5" strokeDasharray="2,2" />
+
+                                    {/* Fill area */}
+                                    <path d={fillD} fill="rgba(208, 2, 27, 0.2)" />
+
+                                    {/* Damage curve line */}
+                                    <path d={pathD} fill="none" stroke="#d0021b" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+
+                                    {/* Dropoff start marker */}
+                                    <circle cx={minRangePct} cy={0} r="3" fill="#fff" vectorEffect="non-scaling-stroke" />
+
+                                    {/* Dropoff end marker */}
+                                    <circle cx={maxRangePct} cy={100 - minDmgPct} r="3" fill="#d0021b" vectorEffect="non-scaling-stroke" />
+                                </svg>
+                            </div>
+
+                            {/* Labels */}
+                            <div className="flex justify-between text-[9px] mt-1">
+                                <span className="text-white font-mono">0m</span>
+                                <span className="text-finals-dim">
+                                    <span className="text-white">{w.dropoffMin}m</span> - <span className="text-finals-red">{w.dropoffMax}m</span>
+                                </span>
+                                <span className="text-finals-dim font-mono">100m</span>
+                            </div>
+                            <div className="text-center text-[9px] text-finals-dim mt-0.5">
+                                {Math.round(w.dropoffMod * 100)}% dmg at max range
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
 
             // Version Dropdown Component
             const VersionSelector = () => (
@@ -723,61 +828,64 @@
                                         <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-2 text-sm">
                                             <div>
                                                 <div className="text-finals-dim text-[10px] uppercase font-bold">TTK (L)</div>
-                                                <div className={`font-mono text-lg leading-none ${w.ttkLight < 0.8 && w.ttkLight >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
-                                                    {w.ttkLight}s
+                                                <div className={`font-mono text-lg leading-none ${w.ttkLight !== null && w.ttkLight < 0.8 && w.ttkLight >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
+                                                    {w.ttkLight !== null ? `${w.ttkLight}s` : '-'}
                                                 </div>
                                             </div>
                                             <div>
                                                 <div className="text-finals-dim text-[10px] uppercase font-bold">TTK (M)</div>
-                                                <div className={`font-mono text-lg leading-none ${w.ttkMed < 0.8 && w.ttkMed >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
-                                                    {w.ttkMed}s
+                                                <div className={`font-mono text-lg leading-none ${w.ttkMed !== null && w.ttkMed < 0.8 && w.ttkMed >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
+                                                    {w.ttkMed !== null ? `${w.ttkMed}s` : '-'}
                                                 </div>
                                             </div>
                                             <div>
                                                 <div className="text-finals-dim text-[10px] uppercase font-bold">TTK (H)</div>
-                                                <div className={`font-mono text-lg leading-none ${w.ttkHeavy < 0.8 && w.ttkHeavy >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
-                                                    {w.ttkHeavy}s
+                                                <div className={`font-mono text-lg leading-none ${w.ttkHeavy !== null && w.ttkHeavy < 0.8 && w.ttkHeavy >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
+                                                    {w.ttkHeavy !== null ? `${w.ttkHeavy}s` : '-'}
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="space-y-3">
                                             <div>
-                                                <div className="text-finals-dim text-[10px] uppercase font-bold mb-1">Damage Profile & Range</div>
+                                                <div className="text-finals-dim text-[10px] uppercase font-bold mb-1">Damage Profile</div>
                                                 <div className="bg-finals-dark p-2 rounded text-xs space-y-1">
                                                     <div className="flex justify-between">
                                                         <span className="text-finals-dim">Body</span>
-                                                        <span className="font-mono text-white">{w.bodyDmg}</span>
+                                                        <span className="font-mono text-white">{w.bodyDmg || '-'}</span>
                                                     </div>
                                                     <div className="w-full bg-white/10 h-1 rounded overflow-hidden">
-                                                        <div className="bg-white h-full" style={{width: Math.min((w.bodyDmg/150)*100, 100) + '%'}}></div>
+                                                        <div className="bg-white h-full" style={{width: Math.min(((w.bodyDmg || 0)/150)*100, 100) + '%'}}></div>
                                                     </div>
                                                     <div className="flex justify-between pt-1">
                                                         <span className="text-finals-dim">Head</span>
-                                                        <span className="font-mono text-finals-red">{w.headDmg}</span>
+                                                        <span className="font-mono text-finals-red">{w.headDmg || '-'}</span>
                                                     </div>
                                                     <div className="w-full bg-white/10 h-1 rounded overflow-hidden">
-                                                        <div className="bg-finals-red h-full" style={{width: Math.min((w.headDmg/150)*100, 100) + '%'}}></div>
-                                                    </div>
-                                                    <div className="flex justify-between pt-2 border-t border-white/5 mt-1">
-                                                        <span className="text-finals-dim">Range</span>
-                                                        <span className="font-mono text-white">{w.rangeStart} - {w.rangeEnd}</span>
+                                                        <div className="bg-finals-red h-full" style={{width: Math.min(((w.headDmg || 0)/150)*100, 100) + '%'}}></div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                            {/* Damage Dropoff Graph */}
+                                            <DamageDropoffGraph weapon={w} />
+
+                                            <div className="grid grid-cols-4 gap-2 text-sm">
                                                 <div>
-                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">Mag Size</div>
-                                                    <div className="text-white font-mono">{w.mag}</div>
+                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">RPM</div>
+                                                    <div className="text-white font-mono">{w.rpm || '-'}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">Mag</div>
+                                                    <div className="text-white font-mono">{w.mag || '-'}</div>
                                                 </div>
                                                 <div>
                                                     <div className="text-finals-dim text-[10px] uppercase font-bold">Reload</div>
-                                                    <div className="text-white font-mono">{w.reload}s</div>
+                                                    <div className="text-white font-mono">{w.reload ? `${w.reload}s` : '-'}</div>
                                                 </div>
                                                 <div>
                                                     <div className="text-finals-dim text-[10px] uppercase font-bold">DPS</div>
-                                                    <div className="text-finals-dim font-mono">{w.dps}</div>
+                                                    <div className="text-yellow-500 font-mono font-bold">{w.dps || '-'}</div>
                                                 </div>
                                             </div>
                                         </div>
