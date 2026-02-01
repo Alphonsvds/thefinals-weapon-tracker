@@ -66,13 +66,25 @@
             border-radius: 2px;
         }
         .finals-card {
-            background: 
+            background:
                 linear-gradient(135deg, transparent 10px, #262626 10px);
-            border-left: 4px solid #333;
             transition: all 0.2s ease;
+            position: relative;
+        }
+        .finals-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 10px;
+            bottom: 0;
+            width: 4px;
+            background: #333;
+            transition: background 0.2s ease;
+        }
+        .finals-card:hover::before {
+            background: #e63946;
         }
         .finals-card:hover {
-            border-left: 4px solid #e63946;
             transform: translateX(4px);
         }
         .dashed-bg {
