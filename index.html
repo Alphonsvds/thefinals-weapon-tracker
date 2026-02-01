@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE FINALS // Weapons Tracker</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SheetJS for parsing Excel/CSV -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+    <!-- App Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        finals: {
+                            black: '#101010',
+                            dark: '#1a1a1a',
+                            panel: '#262626',
+                            red: '#d0021b', // The Finals Red
+                            text: '#e8e8e8',
+                            dim: '#888888',
+                            tierS: '#d0021b',
+                            tierA: '#ff9f0a',
+                            tierB: '#f2f2f2',
+                            tierC: '#888888',
+                            tierD: '#444444',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Saira', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #101010;
+            color: #e8e8e8;
+            font-family: 'Saira', sans-serif;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d0021b;
+            border-radius: 2px;
+        }
+        .finals-card {
+            background: 
+                linear-gradient(135deg, transparent 10px, #262626 10px);
+            border-left: 4px solid #333;
+            transition: all 0.2s ease;
+        }
+        .finals-card:hover {
+            border-left: 4px solid #d0021b;
+            transform: translateX(4px);
+        }
+        .dashed-bg {
+            background-image: linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center center;
+            opacity: 0.1;
+        }
+        .tier-label {
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+        }
+        /* Version Chip Styles */
+        .version-chip {
+            font-family: 'Consolas', monospace;
+            letter-spacing: -0.05em;
+        }
+        .current-tag {
+            animation: pulse-slow 3s infinite;
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback } = React;
+
+        // --- HARDCODED VERSION DATA (v8.3.0) ---
+        // Added Melee Weapons and expanded stats (Mag, Reload)
+        // Added range stats columns (Start Range, End Range, Headshot Multiplier approx)
+        const DATA_V8_3_0 = [
+            // LIGHT
+            { name: "V9S", class: "LIGHT", bodyDmg: 40, headDmg: 60, rpm: 430, mag: 20, reload: 1.3, ttkLight: 0.5, ttkMed: 1.0, ttkHeavy: 1.33, dps: 286, rangeStart: "10m", rangeEnd: "20m" },
+            { name: "XP-54", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 860, mag: 30, reload: 2.3, ttkLight: 0.63, ttkMed: 1.05, ttkHeavy: 1.47, dps: 229, rangeStart: "15m", rangeEnd: "25m" },
+            { name: "M11", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 1000, mag: 40, reload: 1.7, ttkLight: 0.54, ttkMed: 0.90, ttkHeavy: 1.26, dps: 267, rangeStart: "10m", rangeEnd: "20m" },
+            { name: "SR-84", class: "LIGHT", bodyDmg: 118, headDmg: 236, rpm: 46, mag: 6, reload: 3.3, ttkLight: 1.30, ttkMed: 1.30, ttkHeavy: 2.60, dps: 90, rangeStart: "∞", rangeEnd: "∞" },
+            { name: "SH1900", class: "LIGHT", bodyDmg: 195, headDmg: 195, rpm: 100, mag: 2, reload: 2.7, ttkLight: 0.0, ttkMed: 0.75, ttkHeavy: 0.75, dps: 325, rangeStart: "5m", rangeEnd: "10m" },
+            { name: "LH1", class: "LIGHT", bodyDmg: 44, headDmg: 88, rpm: 280, mag: 15, reload: 2.6, ttkLight: 0.67, ttkMed: 1.11, ttkHeavy: 1.56, dps: 205, rangeStart: "40m", rangeEnd: "50m" },
+            { name: "93R", class: "LIGHT", bodyDmg: 26, headDmg: 39, rpm: 1000, mag: 24, reload: 1.75, ttkLight: 0.52, ttkMed: 1.19, ttkHeavy: 1.64, dps: 260, rangeStart: "10m", rangeEnd: "20m" },
+            { name: "Throwing Knives", class: "LIGHT", bodyDmg: 60, headDmg: 90, rpm: 60, mag: "∞", reload: "N/A", ttkLight: 0.8, ttkMed: 1.4, ttkHeavy: 1.8, dps: 120, rangeStart: "∞", rangeEnd: "∞" }, 
+            { name: "Recurve Bow", class: "LIGHT", bodyDmg: 120, headDmg: 180, rpm: 48, mag: "∞", reload: "N/A", ttkLight: 1.25, ttkMed: 2.5, ttkHeavy: 2.5, dps: 96, rangeStart: "∞", rangeEnd: "∞" },
+            { name: ".50 Akimbo", class: "LIGHT", bodyDmg: 44, headDmg: 88, rpm: 230, mag: 14, reload: 2.8, ttkLight: 0.78, ttkMed: 1.3, ttkHeavy: 1.8, dps: 169, rangeStart: "15m", rangeEnd: "25m" },
+            { name: "Sword", class: "LIGHT", bodyDmg: 74, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.0, ttkMed: 1.5, ttkHeavy: 2.5, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" }, 
+            { name: "Dagger", class: "LIGHT", bodyDmg: 50, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.2, ttkMed: 2.0, ttkHeavy: 3.0, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" }, 
+
+            // MEDIUM
+            { name: "AKM", class: "MEDIUM", bodyDmg: 20, headDmg: 30, rpm: 600, mag: 36, reload: 2.2, ttkLight: 0.70, ttkMed: 1.20, ttkHeavy: 1.70, dps: 200, rangeStart: "25m", rangeEnd: "35m" },
+            { name: "FCAR", class: "MEDIUM", bodyDmg: 22, headDmg: 33, rpm: 540, mag: 20, reload: 1.8, ttkLight: 0.67, ttkMed: 1.22, ttkHeavy: 1.66, dps: 198, rangeStart: "30m", rangeEnd: "40m" },
+            { name: "FAMAS", class: "MEDIUM", bodyDmg: 23, headDmg: 34.5, rpm: 630, mag: 27, reload: 2.5, ttkLight: 0.67, ttkMed: 1.15, ttkHeavy: 1.55, dps: 241, rangeStart: "30m", rangeEnd: "40m" },
+            { name: "Model 1887", class: "MEDIUM", bodyDmg: 108, headDmg: 108, rpm: 69, mag: 6, reload: 3.6, ttkLight: 0.87, ttkMed: 0.87, ttkHeavy: 1.74, dps: 124, rangeStart: "10m", rangeEnd: "15m" },
+            { name: "R.357", class: "MEDIUM", bodyDmg: 74, headDmg: 148, rpm: 140, mag: 6, reload: 2.2, ttkLight: 0.85, ttkMed: 1.28, ttkHeavy: 1.71, dps: 172, rangeStart: "25m", rangeEnd: "35m" },
+            { name: "CL-40", class: "MEDIUM", bodyDmg: 100, headDmg: 100, rpm: 75, mag: 4, reload: 3.4, ttkLight: 0.8, ttkMed: 2.4, ttkHeavy: 3.2, dps: 125, rangeStart: "N/A", rangeEnd: "N/A" },
+            { name: "Pike .556", class: "MEDIUM", bodyDmg: 48, headDmg: 72, rpm: 200, mag: 12, reload: 2.3, ttkLight: 0.9, ttkMed: 1.5, ttkHeavy: 2.1, dps: 160, rangeStart: "50m", rangeEnd: "60m" },
+            { name: "Cerberus 12GA", class: "MEDIUM", bodyDmg: 99, headDmg: 99, rpm: 100, mag: 6, reload: 2.9, ttkLight: 0.6, ttkMed: 1.2, ttkHeavy: 1.8, dps: 165, rangeStart: "8m", rangeEnd: "15m" },
+            { name: "M26 Matter", class: "MEDIUM", bodyDmg: 121, headDmg: 121, rpm: 85, mag: 8, reload: 3.0, ttkLight: 0.7, ttkMed: 1.4, ttkHeavy: 1.4, dps: 171, rangeStart: "10m", rangeEnd: "15m" }, 
+            { name: "Riot Shield", class: "MEDIUM", bodyDmg: 84, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.5, ttkMed: 2.5, ttkHeavy: 3.5, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
+            { name: "Dual Blades", class: "MEDIUM", bodyDmg: 40, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.2, ttkMed: 2.0, ttkHeavy: 3.0, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
+
+            // HEAVY
+            { name: "Lewis Gun", class: "HEAVY", bodyDmg: 22, headDmg: 33, rpm: 500, mag: 47, reload: 3.5, ttkLight: 0.72, ttkMed: 1.32, ttkHeavy: 1.80, dps: 183, rangeStart: "25m", rangeEnd: "35m" },
+            { name: "M60", class: "HEAVY", bodyDmg: 20, headDmg: 30, rpm: 580, mag: 70, reload: 3.5, ttkLight: 0.72, ttkMed: 1.24, ttkHeavy: 1.76, dps: 193, rangeStart: "25m", rangeEnd: "35m" },
+            { name: "SA1216", class: "HEAVY", bodyDmg: 72, headDmg: 72, rpm: 190, mag: 16, reload: 3.25, ttkLight: 0.63, ttkMed: 0.95, ttkHeavy: 1.45, dps: 228, rangeStart: "8m", rangeEnd: "12m" },
+            { name: "MGL-32", class: "HEAVY", bodyDmg: 83, headDmg: 83, rpm: 90, mag: 6, reload: 3.1, ttkLight: 0.67, ttkMed: 2.0, ttkHeavy: 2.67, dps: 124, rangeStart: "N/A", rangeEnd: "N/A" },
+            { name: "KS-23", class: "HEAVY", bodyDmg: 100, headDmg: 100, rpm: 78, mag: 6, reload: 3.2, ttkLight: 0.77, ttkMed: 1.54, ttkHeavy: 2.3, dps: 130, rangeStart: "15m", rangeEnd: "25m" },
+            { name: "Flamethrower", class: "HEAVY", bodyDmg: 30, headDmg: 30, rpm: 170, mag: 30, reload: 3.5, ttkLight: 1.41, ttkMed: 2.82, ttkHeavy: 3.88, dps: 85, rangeStart: "8m", rangeEnd: "11m" },
+            { name: "ShAK-50", class: "HEAVY", bodyDmg: 30, headDmg: 45, rpm: 420, mag: 20, reload: 3.3, ttkLight: 0.57, ttkMed: 1.14, ttkHeavy: 1.57, dps: 210, rangeStart: "20m", rangeEnd: "30m" },
+            { name: "BFR Titan", class: "HEAVY", bodyDmg: 90, headDmg: 135, rpm: 75, mag: 5, reload: 3.0, ttkLight: 0.8, ttkMed: 1.6, ttkHeavy: 2.4, dps: 112, rangeStart: "25m", rangeEnd: "35m" },
+            { name: "Sledgehammer", class: "HEAVY", bodyDmg: 115, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 0.8, ttkMed: 1.5, ttkHeavy: 2.2, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
+            { name: "Spear", class: "HEAVY", bodyDmg: 65, headDmg: "N/A", rpm: 0, mag: "N/A", reload: "N/A", ttkLight: 1.0, ttkMed: 1.8, ttkHeavy: 2.5, dps: "N/A", rangeStart: "Melee", rangeEnd: "-" },
+        ];
+        
+        // --- Icon Components (Inline SVGs) ---
+        const IconBase = ({ size = 24, className = "", children }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const Upload = (props) => (
+            <IconBase {...props}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+            </IconBase>
+        );
+
+        const Crosshair = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="22" y1="12" x2="18" y2="12" />
+                <line x1="6" y1="12" x2="2" y2="12" />
+                <line x1="12" y1="6" x2="12" y2="2" />
+                <line x1="12" y1="22" x2="12" y2="18" />
+            </IconBase>
+        );
+
+        const Zap = (props) => (
+            <IconBase {...props}>
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </IconBase>
+        );
+
+        const Shield = (props) => (
+            <IconBase {...props}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </IconBase>
+        );
+
+        const FileSpreadsheet = (props) => (
+            <IconBase {...props}>
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+                <path d="M8 13h2" />
+                <path d="M8 17h2" />
+                <path d="M14 13h2" />
+                <path d="M14 17h2" />
+            </IconBase>
+        );
+
+        const Timer = (props) => (
+            <IconBase {...props}>
+                <line x1="10" y1="2" x2="14" y2="2" />
+                <line x1="12" y1="14" x2="15" y2="11" />
+                <circle cx="12" cy="14" r="8" />
+            </IconBase>
+        );
+
+        const Trophy = (props) => (
+            <IconBase {...props}>
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                <path d="M4 22h16" />
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </IconBase>
+        );
+
+        const ChevronDown = (props) => (
+            <IconBase {...props}>
+                <polyline points="6 9 12 15 18 9" />
+            </IconBase>
+        );
+
+        const Check = (props) => (
+            <IconBase {...props}>
+                <polyline points="20 6 9 17 4 12" />
+            </IconBase>
+        );
+
+        // --- Helper: Data Parsing ---
+        const cleanNumber = (val) => {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            const str = val.toString();
+            // Handle new lines, brackets, etc.
+            const firstPart = str.split('\n')[0].split('(')[0];
+            const num = parseFloat(firstPart.replace(/[^\d.-]/g, ''));
+            return isNaN(num) ? 0 : num;
+        };
+
+        const calculateDPS = (dmg, rpm) => {
+            if (!dmg || !rpm) return "N/A";
+            return ((dmg * rpm) / 60).toFixed(0);
+        };
+
+        const App = () => {
+            // Version State
+            const [versions, setVersions] = useState({
+                '8.3.0': DATA_V8_3_0
+            });
+            const [currentVersion, setCurrentVersion] = useState('8.3.0');
+            const [weapons, setWeapons] = useState(DATA_V8_3_0);
+            
+            // Filter State
+            const [filterClass, setFilterClass] = useState('ALL');
+            const [tierTarget, setTierTarget] = useState('MEDIUM');
+            
+            // Stats Target State
+            const [statsTarget, setStatsTarget] = useState('MEDIUM');
+
+            // Admin/Upload State
+            const [dragActive, setDragActive] = useState(false);
+            const [showUpload, setShowUpload] = useState(false); // Hidden by default
+            const [versionOpen, setVersionOpen] = useState(false);
+
+            // Effect: Update weapons when version changes
+            useEffect(() => {
+                if (versions[currentVersion]) {
+                    setWeapons(versions[currentVersion]);
+                }
+            }, [currentVersion, versions]);
+
+            // --- File Handling ---
+            const handleDrag = useCallback((e) => {
+                if (!showUpload) return; // Disable drag if upload hidden
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.type === "dragenter" || e.type === "dragover") {
+                    setDragActive(true);
+                } else if (e.type === "dragleave") {
+                    setDragActive(false);
+                }
+            }, [showUpload]);
+
+            const processFile = (file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const data = e.target.result;
+                    let workbook;
+                    try {
+                        workbook = XLSX.read(data, { type: 'binary' });
+                    } catch (err) {
+                        console.error("Error reading file", err);
+                        alert("Could not parse file. Make sure it is a valid Excel or CSV file.");
+                        return;
+                    }
+
+                    const sheetName = workbook.SheetNames.find(n => n.toUpperCase().includes("SUMMARY")) || workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                    const newWeapons = parseData(jsonData);
+                    
+                    // Create a "Custom" version
+                    const customVer = `Custom (${file.name.substring(0, 10)}...)`;
+                    setVersions(prev => ({ ...prev, [customVer]: newWeapons }));
+                    setCurrentVersion(customVer);
+                    setDragActive(false);
+                };
+                reader.readAsBinaryString(file);
+            };
+
+            const parseData = (rows) => {
+                const parsedWeapons = [];
+                let currentClass = null;
+
+                // Headers in Zafferman's 8.3.0 Summary:
+                // 0: Name (implied), 1: Body Dmg, 2: Head Dmg, 3: RPM, 4: Mag Size
+                // 6: Empty Reload, 7: Tac Reload
+                // 10: TTK Light, 12: TTK Med, 14: TTK Heavy
+                // 22: Min Range, 23: Max Range
+                
+                rows.forEach((row, index) => {
+                    if (!row || row.length === 0) return;
+
+                    const firstCell = row[0]?.toString().toUpperCase().trim();
+
+                    if (firstCell === "LIGHT") { currentClass = "LIGHT"; return; }
+                    if (firstCell === "MEDIUM") { currentClass = "MEDIUM"; return; }
+                    if (firstCell === "HEAVY") { currentClass = "HEAVY"; return; }
+                    
+                    if (firstCell === "BODY DAMAGE" || !currentClass || !row[0]) return;
+
+                    const name = row[0];
+                    const bodyDmg = cleanNumber(row[1]);
+                    const headDmg = cleanNumber(row[2]);
+                    const rpm = cleanNumber(row[3]);
+                    // Clean mag size (remove parens if any)
+                    const rawMag = row[4];
+                    const mag = rawMag ? cleanNumber(rawMag) : 0;
+                    
+                    const reload = cleanNumber(row[6]); // Empty reload
+                    
+                    const ttkLight = cleanNumber(row[10]);
+                    const ttkMed = cleanNumber(row[12]);
+                    const ttkHeavy = cleanNumber(row[14]);
+
+                    const rangeStart = row[22] || "N/A";
+                    const rangeEnd = row[23] || "N/A";
+
+                    if (!name || name === '-') return;
+
+                    parsedWeapons.push({
+                        name: name,
+                        class: currentClass,
+                        bodyDmg: bodyDmg,
+                        headDmg: headDmg,
+                        rpm: rpm,
+                        mag: mag,
+                        reload: reload,
+                        ttkLight: ttkLight,
+                        ttkMed: ttkMed,
+                        ttkHeavy: ttkHeavy,
+                        dps: calculateDPS(bodyDmg, rpm),
+                        rangeStart: rangeStart,
+                        rangeEnd: rangeEnd
+                    });
+                });
+                return parsedWeapons;
+            };
+
+            const handleDrop = useCallback((e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragActive(false);
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    processFile(e.dataTransfer.files[0]);
+                }
+            }, []);
+
+            // --- Stats Calculation ---
+            const getBestStats = (weaponClass, targetKey) => {
+                const classWeapons = weapons.filter(w => w.class === weaponClass);
+                if (classWeapons.length === 0) return null;
+
+                const fastestTTK = [...classWeapons]
+                    .filter(w => w[targetKey] > 0)
+                    .sort((a, b) => a[targetKey] - b[targetKey])[0];
+
+                const highestDPS = [...classWeapons]
+                    .filter(w => w.dps !== "N/A")
+                    .sort((a, b) => parseFloat(b.dps) - parseFloat(a.dps))[0];
+
+                return { fastestTTK, highestDPS };
+            };
+
+            const stats = useMemo(() => {
+                const ttkKey = statsTarget === 'LIGHT' ? 'ttkLight' : statsTarget === 'HEAVY' ? 'ttkHeavy' : 'ttkMed';
+                return {
+                    LIGHT: getBestStats("LIGHT", ttkKey),
+                    MEDIUM: getBestStats("MEDIUM", ttkKey),
+                    HEAVY: getBestStats("HEAVY", ttkKey)
+                };
+            }, [weapons, statsTarget]);
+
+            const filteredWeapons = useMemo(() => {
+                let filtered = weapons;
+                if (filterClass !== 'ALL') {
+                    filtered = weapons.filter(w => w.class === filterClass);
+                }
+                // Sort by TTK (Med) ascending by default as requested
+                // Move 0 (instant/invalid) or N/A to bottom
+                return [...filtered].sort((a, b) => {
+                    const tA = a.ttkMed || 99;
+                    const tB = b.ttkMed || 99;
+                    // If ttk is 0 but it's a melee weapon like Sword, it might really mean fast, 
+                    // but typically 0 in spreadsheets means missing data or instant. 
+                    // Assuming valid TTKs > 0. Melee hardcoded might be rough estimates.
+                    return tA - tB;
+                });
+            }, [weapons, filterClass]);
+
+            // --- Tier List Calculation ---
+            const tiers = useMemo(() => {
+                const key = tierTarget === 'LIGHT' ? 'ttkLight' : tierTarget === 'HEAVY' ? 'ttkHeavy' : 'ttkMed';
+                let valid = weapons.filter(w => w[key] > 0);
+                valid.sort((a, b) => a[key] - b[key]);
+
+                if (valid.length === 0) return { S: [], A: [], B: [], C: [], D: [] };
+
+                const total = valid.length;
+                const sCount = Math.ceil(total * 0.15);
+                const aCount = Math.ceil(total * 0.20);
+                const bCount = Math.ceil(total * 0.30);
+                const cCount = Math.ceil(total * 0.20);
+                
+                return {
+                    S: valid.slice(0, sCount),
+                    A: valid.slice(sCount, sCount + aCount),
+                    B: valid.slice(sCount + aCount, sCount + aCount + bCount),
+                    C: valid.slice(sCount + aCount + bCount, sCount + aCount + bCount + cCount),
+                    D: valid.slice(sCount + aCount + bCount + cCount)
+                };
+
+            }, [weapons, tierTarget]);
+
+            // --- Components ---
+            const StatRankCard = ({ title, weapon, value, subLabel, icon: Icon, colorClass }) => (
+                <div className="bg-finals-panel p-4 border border-white/10 relative overflow-hidden group">
+                    <div className={`absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}>
+                        <Icon size={48} />
+                    </div>
+                    <div className="text-finals-dim text-xs font-bold tracking-widest uppercase mb-1">{title}</div>
+                    <div className="text-2xl font-black text-white truncate">{weapon?.name || "N/A"}</div>
+                    <div className="flex items-end gap-2 mt-2">
+                        <div className={`text-4xl font-bold leading-none ${colorClass.replace('text-', 'text-')}`}>
+                            {value}
+                        </div>
+                        <div className="text-finals-dim text-sm font-semibold mb-1">{subLabel}</div>
+                    </div>
+                </div>
+            );
+
+            const ClassSection = ({ className, data, targetLabel }) => {
+                if (!data) return null;
+                const ttkValue = targetLabel === 'Vs LIGHT' ? data.fastestTTK?.ttkLight : targetLabel === 'Vs HEAVY' ? data.fastestTTK?.ttkHeavy : data.fastestTTK?.ttkMed;
+
+                return (
+                    <div className="mb-8">
+                        <h3 className="text-finals-red font-black text-xl mb-4 flex items-center gap-2 uppercase tracking-tighter">
+                            <Shield size={20} className={className === 'LIGHT' ? 'text-yellow-400' : className === 'MEDIUM' ? 'text-orange-400' : 'text-purple-400'} />
+                            {className} Build
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <StatRankCard 
+                                title={`Fastest TTK (${targetLabel})`}
+                                weapon={data.fastestTTK} 
+                                value={`${ttkValue}s`} 
+                                subLabel="Seconds"
+                                icon={Timer}
+                                colorClass="text-finals-red"
+                            />
+                            <StatRankCard 
+                                title="Highest Output" 
+                                weapon={data.highestDPS} 
+                                value={data.highestDPS?.dps} 
+                                subLabel="DPS"
+                                icon={Zap}
+                                colorClass="text-yellow-500"
+                            />
+                        </div>
+                    </div>
+                );
+            };
+
+            const TierRow = ({ tier, color, weapons }) => (
+                <div className="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr] border-b border-white/5 last:border-0 min-h-[100px]">
+                    <div className={`flex items-center justify-center font-black text-4xl italic ${color === 'bg-finals-red' ? 'text-white' : 'text-finals-black'} ${color}`}>
+                        <span className="tier-label">{tier}</span>
+                    </div>
+                    <div className="bg-finals-panel/50 p-4 flex flex-wrap gap-3 items-center">
+                        {weapons.map((w, i) => (
+                            <div key={i} className="bg-finals-dark border border-white/10 p-2 w-28 md:w-32 hover:border-finals-red hover:-translate-y-1 transition-all group cursor-default relative">
+                                <div className="text-xs text-finals-dim font-bold mb-1 flex justify-between">
+                                    <span className={w.class === 'LIGHT' ? 'text-yellow-500' : w.class === 'MEDIUM' ? 'text-orange-500' : 'text-purple-500'}>{w.class[0]}</span>
+                                    <span>{tierTarget === 'LIGHT' ? w.ttkLight : tierTarget === 'HEAVY' ? w.ttkHeavy : w.ttkMed}s</span>
+                                </div>
+                                <div className="font-bold text-sm text-white truncate leading-tight group-hover:text-finals-red">{w.name}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            // Version Dropdown Component
+            const VersionSelector = () => (
+                <div className="relative">
+                    <button 
+                        onClick={() => setVersionOpen(!versionOpen)}
+                        className="flex items-center gap-2 bg-finals-panel border border-white/10 px-4 py-2 hover:bg-white/5 transition-colors"
+                    >
+                        <div className="text-right">
+                            <div className="text-[10px] text-finals-dim font-bold tracking-widest uppercase">PATCH VERSION</div>
+                            <div className="flex items-center gap-2 font-mono text-sm font-bold text-finals-red">
+                                {currentVersion}
+                                {currentVersion.includes('8.3.0') && <span className="bg-finals-red text-white text-[8px] px-1 rounded uppercase current-tag">Current</span>}
+                            </div>
+                        </div>
+                        <ChevronDown size={16} className={`text-finals-dim transition-transform ${versionOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {versionOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-64 bg-finals-black border border-white/10 z-50 shadow-xl">
+                            {Object.keys(versions).map(ver => (
+                                <button
+                                    key={ver}
+                                    onClick={() => {
+                                        setCurrentVersion(ver);
+                                        setVersionOpen(false);
+                                    }}
+                                    className="w-full text-left px-4 py-3 border-b border-white/5 hover:bg-finals-panel flex justify-between items-center group"
+                                >
+                                    <span className={`font-mono text-sm ${currentVersion === ver ? 'text-white font-bold' : 'text-finals-dim group-hover:text-white'}`}>
+                                        {ver}
+                                    </span>
+                                    {currentVersion === ver && <Check size={14} className="text-finals-red" />}
+                                </button>
+                            ))}
+                            {/* Secret Admin Toggle */}
+                            <button 
+                                onClick={() => {
+                                    setShowUpload(!showUpload);
+                                    setVersionOpen(false);
+                                }}
+                                className="w-full text-left px-4 py-2 bg-finals-dark text-[10px] text-finals-dim hover:text-finals-red uppercase tracking-widest font-bold border-t border-white/10"
+                            >
+                                {showUpload ? "Hide Admin Upload" : "Admin: Upload New Data"}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen relative pb-20">
+                    <div className="fixed inset-0 dashed-bg pointer-events-none z-0"></div>
+                    
+                    {/* Header */}
+                    <div 
+                        className={`relative z-10 p-8 border-b-4 transition-colors duration-300 bg-finals-black border-finals-red`}
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
+                    >
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div>
+                                <h1 className="text-5xl md:text-7xl font-black tracking-normal italic text-white mb-2">
+                                    THE FINALS <span className="text-finals-red text-2xl not-italic font-bold align-top">WEAPONS TRACKER</span>
+                                </h1>
+                                <p className="text-finals-dim font-mono text-sm flex items-center gap-2">
+                                    <FileSpreadsheet size={16} />
+                                    DATA SOURCE: 
+                                    <a 
+                                        href="https://docs.google.com/spreadsheets/u/0/d/1Ud7Rdl3AgMw9mmfDwW2LtDMnzZQ9IIhnqSE4ivsaMTs/htmlview?pli=1#" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="hover:text-white transition-colors border-b border-white/20 hover:border-white"
+                                    >
+                                        Zafferman's Weapon Master Sheet
+                                    </a>
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col items-end gap-4">
+                                <VersionSelector />
+                                
+                                {showUpload && (
+                                    <div className={`border-2 border-dashed p-4 rounded flex items-center gap-4 transition-all ${dragActive ? 'border-finals-red bg-finals-red/10' : 'border-finals-dim/30 hover:border-finals-text/50'}`}>
+                                        <Upload className={dragActive ? "text-finals-red" : "text-finals-dim"} />
+                                        <div className="text-right">
+                                            <div className="text-xs font-bold text-white uppercase">Upload CSV/XLSX</div>
+                                            <div className="text-[10px] text-finals-dim">Drag file to parse new version</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+                        
+                        {/* Stats Leaders Section with New Controls */}
+                        <div className="mb-16">
+                            <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b-4 border-white pb-2 mb-6">
+                                <h2 className="text-4xl font-black uppercase tracking-tight flex items-center gap-3 italic">
+                                    <Zap className="text-finals-red" size={32} /> 
+                                    Stats Leaders
+                                </h2>
+                                <div className="flex gap-1 bg-finals-panel p-1 rounded">
+                                    {['LIGHT', 'MEDIUM', 'HEAVY'].map(target => (
+                                        <button
+                                            key={target}
+                                            onClick={() => setStatsTarget(target)}
+                                            className={`px-4 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
+                                                statsTarget === target 
+                                                ? 'bg-finals-red text-white' 
+                                                : 'text-finals-dim hover:text-white'
+                                            }`}
+                                        >
+                                            Vs {target}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <ClassSection className="LIGHT" data={stats.LIGHT} targetLabel={`Vs ${statsTarget}`} />
+                                <ClassSection className="MEDIUM" data={stats.MEDIUM} targetLabel={`Vs ${statsTarget}`} />
+                                <ClassSection className="HEAVY" data={stats.HEAVY} targetLabel={`Vs ${statsTarget}`} />
+                            </div>
+                        </div>
+
+                        {/* Tier List Section */}
+                        <div className="mb-16">
+                             <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b-4 border-white pb-2 mb-6">
+                                <h2 className="text-4xl font-black uppercase tracking-tight flex items-center gap-3 italic">
+                                    <Trophy className="text-finals-red" size={32} /> 
+                                    Meta Tier List
+                                </h2>
+                                <div className="flex gap-1 bg-finals-panel p-1 rounded">
+                                    {['LIGHT', 'MEDIUM', 'HEAVY'].map(target => (
+                                        <button
+                                            key={target}
+                                            onClick={() => setTierTarget(target)}
+                                            className={`px-4 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
+                                                tierTarget === target 
+                                                ? 'bg-finals-red text-white' 
+                                                : 'text-finals-dim hover:text-white'
+                                            }`}
+                                        >
+                                            Vs {target}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="border border-white/10 rounded overflow-hidden">
+                                <TierRow tier="S" color="bg-finals-tierS" weapons={tiers.S} />
+                                <TierRow tier="A" color="bg-finals-tierA" weapons={tiers.A} />
+                                <TierRow tier="B" color="bg-finals-tierB" weapons={tiers.B} />
+                                <TierRow tier="C" color="bg-finals-tierC" weapons={tiers.C} />
+                                <TierRow tier="D" color="bg-finals-tierD" weapons={tiers.D} />
+                            </div>
+                        </div>
+
+                        {/* Database Grid */}
+                        <div className="flex flex-col gap-6">
+                            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+                                <h2 className="text-3xl font-black uppercase tracking-tight flex items-center gap-2">
+                                    <Crosshair className="text-finals-red" /> Weapon Database
+                                </h2>
+                                
+                                <div className="flex gap-2">
+                                    {['ALL', 'LIGHT', 'MEDIUM', 'HEAVY'].map(cls => (
+                                        <button 
+                                            key={cls}
+                                            onClick={() => setFilterClass(cls)}
+                                            className={`px-6 py-2 font-bold uppercase tracking-wider text-sm transition-all skew-x-[-10deg] ${filterClass === cls 
+                                                ? 'bg-finals-red text-white' 
+                                                : 'bg-finals-panel text-finals-dim hover:text-white hover:bg-white/10'}`}
+                                        >
+                                            <span className="block skew-x-[10deg]">{cls}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {filteredWeapons.map((w, idx) => (
+                                    <div key={idx} className="finals-card p-5 relative overflow-hidden group flex flex-col gap-4">
+                                        <div className="flex justify-between items-start">
+                                            <h3 className="font-bold text-xl text-white uppercase truncate pr-4" title={w.name}>{w.name}</h3>
+                                            <span className={`text-[10px] font-black px-2 py-1 rounded bg-black/50 ${w.class === 'LIGHT' ? 'text-yellow-400' : w.class === 'MEDIUM' ? 'text-orange-400' : 'text-purple-400'}`}>
+                                                {w.class[0]}
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-2 text-sm">
+                                            <div>
+                                                <div className="text-finals-dim text-[10px] uppercase font-bold">TTK (L)</div>
+                                                <div className={`font-mono text-lg leading-none ${w.ttkLight < 0.8 && w.ttkLight >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
+                                                    {w.ttkLight}s
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-finals-dim text-[10px] uppercase font-bold">TTK (M)</div>
+                                                <div className={`font-mono text-lg leading-none ${w.ttkMed < 0.8 && w.ttkMed >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
+                                                    {w.ttkMed}s
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-finals-dim text-[10px] uppercase font-bold">TTK (H)</div>
+                                                <div className={`font-mono text-lg leading-none ${w.ttkHeavy < 0.8 && w.ttkHeavy >= 0 ? 'text-finals-red font-bold' : 'text-white'}`}>
+                                                    {w.ttkHeavy}s
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <div>
+                                                <div className="text-finals-dim text-[10px] uppercase font-bold mb-1">Damage Profile & Range</div>
+                                                <div className="bg-finals-dark p-2 rounded text-xs space-y-1">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-finals-dim">Body</span>
+                                                        <span className="font-mono text-white">{w.bodyDmg}</span>
+                                                    </div>
+                                                    <div className="w-full bg-white/10 h-1 rounded overflow-hidden">
+                                                        <div className="bg-white h-full" style={{width: Math.min((w.bodyDmg/150)*100, 100) + '%'}}></div>
+                                                    </div>
+                                                    <div className="flex justify-between pt-1">
+                                                        <span className="text-finals-dim">Head</span>
+                                                        <span className="font-mono text-finals-red">{w.headDmg}</span>
+                                                    </div>
+                                                    <div className="w-full bg-white/10 h-1 rounded overflow-hidden">
+                                                        <div className="bg-finals-red h-full" style={{width: Math.min((w.headDmg/150)*100, 100) + '%'}}></div>
+                                                    </div>
+                                                    <div className="flex justify-between pt-2 border-t border-white/5 mt-1">
+                                                        <span className="text-finals-dim">Range</span>
+                                                        <span className="font-mono text-white">{w.rangeStart} - {w.rangeEnd}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                                <div>
+                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">Mag Size</div>
+                                                    <div className="text-white font-mono">{w.mag}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">Reload</div>
+                                                    <div className="text-white font-mono">{w.reload}s</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">DPS</div>
+                                                    <div className="text-finals-dim font-mono">{w.dps}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    {/* Drag Overlay Indicator */}
+                    {dragActive && showUpload && (
+                        <div className="fixed inset-0 bg-finals-red/20 backdrop-blur-sm z-50 flex items-center justify-center border-8 border-finals-red border-dashed m-8 rounded-lg pointer-events-none">
+                            <div className="text-6xl font-black text-white italic tracking-tighter animate-pulse">
+                                DROP TO UPLOAD
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
