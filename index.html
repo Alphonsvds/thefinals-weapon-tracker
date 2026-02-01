@@ -301,24 +301,28 @@
             // --- Tier List Calculation ---
             const tiers = useMemo(() => {
                 const key = tierTarget === 'LIGHT' ? 'ttkLight' : tierTarget === 'HEAVY' ? 'ttkHeavy' : 'ttkMed';
-                // Filter out weapons with null/undefined TTK (melee weapons)
-                let valid = weapons.filter(w => w[key] !== null && w[key] !== undefined && w[key] >= 0);
-                valid.sort((a, b) => a[key] - b[key]);
 
-                if (valid.length === 0) return { S: [], A: [], B: [], C: [], D: [] };
+                // Separate ranged weapons (with TTK) from melee weapons
+                let ranged = weapons.filter(w => w[key] !== null && w[key] !== undefined && w[key] >= 0 && !w.isMelee);
+                let melee = weapons.filter(w => w.isMelee);
 
-                const total = valid.length;
+                ranged.sort((a, b) => a[key] - b[key]);
+
+                if (ranged.length === 0) return { S: [], A: [], B: [], C: [], D: [], MELEE: melee };
+
+                const total = ranged.length;
                 const sCount = Math.ceil(total * 0.15);
                 const aCount = Math.ceil(total * 0.20);
                 const bCount = Math.ceil(total * 0.30);
                 const cCount = Math.ceil(total * 0.20);
 
                 return {
-                    S: valid.slice(0, sCount),
-                    A: valid.slice(sCount, sCount + aCount),
-                    B: valid.slice(sCount + aCount, sCount + aCount + bCount),
-                    C: valid.slice(sCount + aCount + bCount, sCount + aCount + bCount + cCount),
-                    D: valid.slice(sCount + aCount + bCount + cCount)
+                    S: ranged.slice(0, sCount),
+                    A: ranged.slice(sCount, sCount + aCount),
+                    B: ranged.slice(sCount + aCount, sCount + aCount + bCount),
+                    C: ranged.slice(sCount + aCount + bCount, sCount + aCount + bCount + cCount),
+                    D: ranged.slice(sCount + aCount + bCount + cCount),
+                    MELEE: melee
                 };
 
             }, [weapons, tierTarget]);
@@ -378,6 +382,25 @@
                                 <div className="text-xs text-finals-dim font-bold mb-1 flex justify-between">
                                     <span className={w.class === 'LIGHT' ? 'text-yellow-500' : w.class === 'MEDIUM' ? 'text-orange-500' : 'text-purple-500'}>{w.class[0]}</span>
                                     <span>{tierTarget === 'LIGHT' ? w.ttkLight : tierTarget === 'HEAVY' ? w.ttkHeavy : w.ttkMed}s</span>
+                                </div>
+                                <div className="font-bold text-sm text-white truncate leading-tight group-hover:text-finals-red">{w.name}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const MeleeTierRow = ({ weapons }) => (
+                <div className="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr] border-b border-white/5 last:border-0 min-h-[100px]">
+                    <div className="flex items-center justify-center font-black text-2xl italic text-white bg-gradient-to-b from-zinc-700 to-zinc-800">
+                        <span className="tier-label">MELEE</span>
+                    </div>
+                    <div className="bg-finals-panel/50 p-4 flex flex-wrap gap-3 items-center">
+                        {weapons.map((w, i) => (
+                            <div key={i} className="bg-finals-dark border border-white/10 p-2 w-28 md:w-32 hover:border-finals-red hover:-translate-y-1 transition-all group cursor-default relative">
+                                <div className="text-xs text-finals-dim font-bold mb-1 flex justify-between">
+                                    <span className={w.class === 'LIGHT' ? 'text-yellow-500' : w.class === 'MEDIUM' ? 'text-orange-500' : 'text-purple-500'}>{w.class[0]}</span>
+                                    <span className="text-zinc-500">{w.bodyDmg} dmg</span>
                                 </div>
                                 <div className="font-bold text-sm text-white truncate leading-tight group-hover:text-finals-red">{w.name}</div>
                             </div>
@@ -621,6 +644,9 @@
                                 <TierRow tier="B" color="bg-finals-tierB" weapons={tiers.B} />
                                 <TierRow tier="C" color="bg-finals-tierC" weapons={tiers.C} />
                                 <TierRow tier="D" color="bg-finals-tierD" weapons={tiers.D} />
+                                {tiers.MELEE && tiers.MELEE.length > 0 && (
+                                    <MeleeTierRow weapons={tiers.MELEE} />
+                                )}
                             </div>
                         </div>
 
