@@ -2,7 +2,7 @@
 
  A comprehensive, interactive dashboard for visualizing weapon statistics, Time-to-Kill (TTK), and meta rankings for The Finals.
 
- Live demo: https://alphonsvds.github.io/thefinals-weapon-tracker/
+ Live: https://alphonsvds.github.io/thefinals-weapon-tracker/
 
  ## Features
 
