@@ -118,47 +118,54 @@
 
         // --- HARDCODED VERSION DATA (v8.3.0) ---
         // Data sourced from Zafferman's Weapon Master Sheet v8.3.0
+        // DPS Calculation Notes:
+        // - Headshot DPS = (headDmg × RPM) / 60 for standard weapons
+        // - Burst weapons (93R, FAMAS): Account for burst delay
+        //   93R: 3-round burst @ 1000 RPM internal, ~0.2s delay → effective ~557 RPM → 362 headshot DPS
+        //   FAMAS: 3-round burst @ 1080 RPM internal, ~0.44s delay → effective ~311 headshot DPS
+        // - Weapons without headshot multiplier (shotguns, explosives) use body DPS
+        
         const DATA_V8_3_0 = [
             // LIGHT
-            { name: "93R", class: "LIGHT", bodyDmg: 26, headDmg: 39, rpm: 1000, mag: 24, reload: 1.75, ttkLight: 0.52, ttkMed: 1.19, ttkHeavy: 1.64, dps: 433, dropoffMin: 32, dropoffMax: 42, dropoffMod: 0.40 },
-            { name: "ARN-220", class: "LIGHT", bodyDmg: 17, headDmg: 25.5, rpm: 725, mag: 60, reload: 2.80, ttkLight: 0.66, ttkMed: 1.16, ttkHeavy: 1.66, dps: 205, dropoffMin: 37.5, dropoffMax: 45, dropoffMod: 0.72 },
+            { name: "93R", class: "LIGHT", bodyDmg: 26, headDmg: 39, rpm: 1000, mag: 24, reload: 1.75, ttkLight: 0.52, ttkMed: 1.19, ttkHeavy: 1.64, dps: 650, dropoffMin: 32, dropoffMax: 42, dropoffMod: 0.40, isBurst: true, burstCount: 3, burstDelay: 0.2 },
+            { name: "ARN-220", class: "LIGHT", bodyDmg: 17, headDmg: 25.5, rpm: 725, mag: 60, reload: 2.80, ttkLight: 0.66, ttkMed: 1.16, ttkHeavy: 1.66, dps: 308, dropoffMin: 37.5, dropoffMax: 45, dropoffMod: 0.72 },
             { name: "Dagger", class: "LIGHT", bodyDmg: 60, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
-            { name: "LH1", class: "LIGHT", bodyDmg: 44, headDmg: 88, rpm: 280, mag: 15, reload: 2.85, ttkLight: 0.67, ttkMed: 1.11, ttkHeavy: 1.56, dps: 205, dropoffMin: 50, dropoffMax: 55, dropoffMod: 0.72 },
-            { name: "M11", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 1000, mag: 40, reload: 1.85, ttkLight: 0.54, ttkMed: 0.90, ttkHeavy: 1.26, dps: 267, dropoffMin: 10, dropoffMax: 17.5, dropoffMod: 0.52 },
+            { name: "LH1", class: "LIGHT", bodyDmg: 44, headDmg: 88, rpm: 280, mag: 15, reload: 2.85, ttkLight: 0.67, ttkMed: 1.11, ttkHeavy: 1.56, dps: 411, dropoffMin: 50, dropoffMax: 55, dropoffMod: 0.72 },
+            { name: "M11", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 1000, mag: 40, reload: 1.85, ttkLight: 0.54, ttkMed: 0.90, ttkHeavy: 1.26, dps: 400, dropoffMin: 10, dropoffMax: 17.5, dropoffMod: 0.52 },
             { name: "M26 Matter", class: "LIGHT", bodyDmg: 121, headDmg: null, rpm: 85, mag: 8, reload: 2.45, ttkLight: 0.71, ttkMed: 1.41, ttkHeavy: 1.41, dps: 171, dropoffMin: 15, dropoffMax: 25, dropoffMod: 0.64 },
-            { name: "Recurve Bow", class: "LIGHT", bodyDmg: 124, headDmg: 186, rpm: 48, mag: null, reload: null, ttkLight: 1.25, ttkMed: 2.50, ttkHeavy: 2.50, dps: 99, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "Recurve Bow", class: "LIGHT", bodyDmg: 124, headDmg: 186, rpm: 48, mag: null, reload: null, ttkLight: 1.25, ttkMed: 2.50, ttkHeavy: 2.50, dps: 149, dropoffMin: null, dropoffMax: null, dropoffMod: null },
             { name: "SH1900", class: "LIGHT", bodyDmg: 195, headDmg: null, rpm: 80, mag: 2, reload: 2.60, ttkLight: 0.00, ttkMed: 0.75, ttkHeavy: 0.75, dps: 260, dropoffMin: null, dropoffMax: null, dropoffMod: null },
-            { name: "SR-84", class: "LIGHT", bodyDmg: 118, headDmg: 236, rpm: 40, mag: 6, reload: 3.35, ttkLight: 1.30, ttkMed: 2.61, ttkHeavy: 2.61, dps: 79, dropoffMin: 80, dropoffMax: 100, dropoffMod: 0.75 },
+            { name: "SR-84", class: "LIGHT", bodyDmg: 118, headDmg: 236, rpm: 40, mag: 6, reload: 3.35, ttkLight: 1.30, ttkMed: 2.61, ttkHeavy: 2.61, dps: 157, dropoffMin: 80, dropoffMax: 100, dropoffMod: 0.75 },
             { name: "Sword", class: "LIGHT", bodyDmg: 88, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
-            { name: "Throwing Knives", class: "LIGHT", bodyDmg: 60, headDmg: 90, rpm: 545, mag: null, reload: null, ttkLight: 0.78, ttkMed: 1.56, ttkHeavy: 1.67, dps: 545, dropoffMin: null, dropoffMax: null, dropoffMod: null },
-            { name: "V9S", class: "LIGHT", bodyDmg: 40, headDmg: 60, rpm: 360, mag: 20, reload: 1.50, ttkLight: 0.50, ttkMed: 1.00, ttkHeavy: 1.33, dps: 240, dropoffMin: 10, dropoffMax: 15, dropoffMod: 0.67 },
-            { name: "XP-54", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 860, mag: 34, reload: 2.50, ttkLight: 0.63, ttkMed: 1.05, ttkHeavy: 1.47, dps: 229, dropoffMin: 22.5, dropoffMax: 32.5, dropoffMod: 0.52 },
+            { name: "Throwing Knives", class: "LIGHT", bodyDmg: 60, headDmg: 90, rpm: 545, mag: null, reload: null, ttkLight: 0.78, ttkMed: 1.56, ttkHeavy: 1.67, dps: 818, dropoffMin: null, dropoffMax: null, dropoffMod: null },
+            { name: "V9S", class: "LIGHT", bodyDmg: 40, headDmg: 60, rpm: 360, mag: 20, reload: 1.50, ttkLight: 0.50, ttkMed: 1.00, ttkHeavy: 1.33, dps: 360, dropoffMin: 10, dropoffMax: 15, dropoffMod: 0.67 },
+            { name: "XP-54", class: "LIGHT", bodyDmg: 16, headDmg: 24, rpm: 860, mag: 34, reload: 2.50, ttkLight: 0.63, ttkMed: 1.05, ttkHeavy: 1.47, dps: 344, dropoffMin: 22.5, dropoffMax: 32.5, dropoffMod: 0.52 },
 
             // MEDIUM
-            { name: "AKM", class: "MEDIUM", bodyDmg: 20, headDmg: 30, rpm: 600, mag: 32, reload: 2.35, ttkLight: 0.70, ttkMed: 1.20, ttkHeavy: 1.70, dps: 200, dropoffMin: 30, dropoffMax: 37.5, dropoffMod: 0.55 },
-            { name: "CB-01 Repeater", class: "MEDIUM", bodyDmg: 88, headDmg: 132, rpm: null, mag: 8, reload: 5.05, ttkLight: 0.78, ttkMed: 1.56, ttkHeavy: 2.34, dps: null, dropoffMin: 40, dropoffMax: 45, dropoffMod: 0.69 },
+            { name: "AKM", class: "MEDIUM", bodyDmg: 20, headDmg: 30, rpm: 600, mag: 32, reload: 2.35, ttkLight: 0.70, ttkMed: 1.20, ttkHeavy: 1.70, dps: 300, dropoffMin: 30, dropoffMax: 37.5, dropoffMod: 0.55 },
+            { name: "CB-01 Repeater", class: "MEDIUM", bodyDmg: 88, headDmg: 132, rpm: 77, mag: 8, reload: 5.05, ttkLight: 0.78, ttkMed: 1.56, ttkHeavy: 2.34, dps: 169, dropoffMin: 40, dropoffMax: 45, dropoffMod: 0.69 },
             { name: "Cerberus 12GA", class: "MEDIUM", bodyDmg: 99, headDmg: null, rpm: 100, mag: 3, reload: 2.95, ttkLight: 0.60, ttkMed: 1.20, ttkHeavy: null, dps: 165, dropoffMin: 10, dropoffMax: 17.5, dropoffMod: 0.63 },
             { name: "CL-40", class: "MEDIUM", bodyDmg: 100, headDmg: null, rpm: 75, mag: 5, reload: 3.95, ttkLight: 0.80, ttkMed: 1.60, ttkHeavy: 2.40, dps: 125, dropoffMin: null, dropoffMax: null, dropoffMod: null },
             { name: "Dual Blades", class: "MEDIUM", bodyDmg: 50, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
-            { name: "FAMAS", class: "MEDIUM", bodyDmg: 23, headDmg: 34.5, rpm: 1080, mag: 27, reload: 2.60, ttkLight: 0.76, ttkMed: 1.20, ttkHeavy: 1.91, dps: 414, dropoffMin: 35, dropoffMax: 42.5, dropoffMod: 0.50 },
-            { name: "FCAR", class: "MEDIUM", bodyDmg: 22, headDmg: 33, rpm: 540, mag: 25, reload: 2.10, ttkLight: 0.67, ttkMed: 1.22, ttkHeavy: 1.67, dps: 198, dropoffMin: 35, dropoffMax: 40, dropoffMod: 0.55 },
+            { name: "FAMAS", class: "MEDIUM", bodyDmg: 23, headDmg: 34.5, rpm: 1080, mag: 27, reload: 2.60, ttkLight: 0.76, ttkMed: 1.20, ttkHeavy: 1.91, dps: 621, dropoffMin: 35, dropoffMax: 42.5, dropoffMod: 0.50, isBurst: true, burstCount: 3, burstDelay: 0.44 },
+            { name: "FCAR", class: "MEDIUM", bodyDmg: 22, headDmg: 33, rpm: 540, mag: 25, reload: 2.10, ttkLight: 0.67, ttkMed: 1.22, ttkHeavy: 1.67, dps: 297, dropoffMin: 35, dropoffMax: 40, dropoffMod: 0.55 },
             { name: "Model 1887", class: "MEDIUM", bodyDmg: 108, headDmg: null, rpm: 69, mag: 7, reload: 4.30, ttkLight: 0.87, ttkMed: 1.74, ttkHeavy: 2.61, dps: 124, dropoffMin: 20, dropoffMax: 30, dropoffMod: 0.65 },
-            { name: "P90", class: "MEDIUM", bodyDmg: 14, headDmg: 21, rpm: 900, mag: 50, reload: 2.70, ttkLight: 0.67, ttkMed: 1.13, ttkHeavy: 1.60, dps: 210, dropoffMin: 10, dropoffMax: 20, dropoffMod: 0.62 },
-            { name: "Pike .556", class: "MEDIUM", bodyDmg: 48, headDmg: 72, rpm: 200, mag: 12, reload: 3.25, ttkLight: 0.90, ttkMed: 1.50, ttkHeavy: 2.10, dps: 160, dropoffMin: 40, dropoffMax: 50, dropoffMod: 0.80 },
-            { name: "R.357", class: "MEDIUM", bodyDmg: 74, headDmg: 148, rpm: 140, mag: 6, reload: 2.50, ttkLight: 0.86, ttkMed: 1.29, ttkHeavy: 1.71, dps: 173, dropoffMin: 27.5, dropoffMax: 44, dropoffMod: 0.40 },
+            { name: "P90", class: "MEDIUM", bodyDmg: 14, headDmg: 21, rpm: 900, mag: 50, reload: 2.70, ttkLight: 0.67, ttkMed: 1.13, ttkHeavy: 1.60, dps: 315, dropoffMin: 10, dropoffMax: 20, dropoffMod: 0.62 },
+            { name: "Pike .556", class: "MEDIUM", bodyDmg: 48, headDmg: 72, rpm: 200, mag: 12, reload: 3.25, ttkLight: 0.90, ttkMed: 1.50, ttkHeavy: 2.10, dps: 240, dropoffMin: 40, dropoffMax: 50, dropoffMod: 0.80 },
+            { name: "R.357", class: "MEDIUM", bodyDmg: 74, headDmg: 148, rpm: 140, mag: 6, reload: 2.50, ttkLight: 0.86, ttkMed: 1.29, ttkHeavy: 1.71, dps: 345, dropoffMin: 27.5, dropoffMax: 44, dropoffMod: 0.40 },
             { name: "Riot Shield", class: "MEDIUM", bodyDmg: 90, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
 
             // HEAVY
-            { name: ".50 Akimbo", class: "HEAVY", bodyDmg: 44, headDmg: 88, rpm: 230, mag: 14, reload: 3.00, ttkLight: 0.78, ttkMed: 1.30, ttkHeavy: 1.83, dps: 169, dropoffMin: 32, dropoffMax: 39, dropoffMod: 0.50 },
-            { name: "BFR Titan", class: "HEAVY", bodyDmg: 90, headDmg: 135, rpm: 75, mag: 5, reload: 5.00, ttkLight: 0.80, ttkMed: 1.60, ttkHeavy: 2.40, dps: 112, dropoffMin: 30, dropoffMax: 45, dropoffMod: 0.70 },
+            { name: ".50 Akimbo", class: "HEAVY", bodyDmg: 44, headDmg: 88, rpm: 230, mag: 14, reload: 3.00, ttkLight: 0.78, ttkMed: 1.30, ttkHeavy: 1.83, dps: 337, dropoffMin: 32, dropoffMax: 39, dropoffMod: 0.50 },
+            { name: "BFR Titan", class: "HEAVY", bodyDmg: 90, headDmg: 135, rpm: 75, mag: 5, reload: 5.00, ttkLight: 0.80, ttkMed: 1.60, ttkHeavy: 2.40, dps: 169, dropoffMin: 30, dropoffMax: 45, dropoffMod: 0.70 },
             { name: "Flamethrower", class: "HEAVY", bodyDmg: 30, headDmg: null, rpm: 170, mag: 30, reload: 3.55, ttkLight: 1.41, ttkMed: 2.82, ttkHeavy: 3.88, dps: 85, dropoffMin: null, dropoffMax: null, dropoffMod: null },
             { name: "KS-23", class: "HEAVY", bodyDmg: 100, headDmg: null, rpm: 78, mag: 6, reload: 5.55, ttkLight: 0.77, ttkMed: 1.54, ttkHeavy: 2.31, dps: 130, dropoffMin: 18, dropoffMax: 23, dropoffMod: 0.70 },
-            { name: "Lewis Gun", class: "HEAVY", bodyDmg: 22, headDmg: 33, rpm: 500, mag: 47, reload: 3.55, ttkLight: 0.72, ttkMed: 1.32, ttkHeavy: 1.80, dps: 183, dropoffMin: 35, dropoffMax: 40, dropoffMod: 0.67 },
-            { name: "M134 Minigun", class: "HEAVY", bodyDmg: 11, headDmg: 14.6, rpm: 1500, mag: 250, reload: 5.25, ttkLight: 0.52, ttkMed: 0.88, ttkHeavy: 1.24, dps: 275, dropoffMin: 30, dropoffMax: 50, dropoffMod: 0.53 },
-            { name: "M60", class: "HEAVY", bodyDmg: 20, headDmg: 30, rpm: 580, mag: 70, reload: 3.55, ttkLight: 0.72, ttkMed: 1.24, ttkHeavy: 1.76, dps: 193, dropoffMin: 25, dropoffMax: 35, dropoffMod: 0.50 },
+            { name: "Lewis Gun", class: "HEAVY", bodyDmg: 22, headDmg: 33, rpm: 500, mag: 47, reload: 3.55, ttkLight: 0.72, ttkMed: 1.32, ttkHeavy: 1.80, dps: 275, dropoffMin: 35, dropoffMax: 40, dropoffMod: 0.67 },
+            { name: "M134 Minigun", class: "HEAVY", bodyDmg: 11, headDmg: 14.6, rpm: 1500, mag: 250, reload: 5.25, ttkLight: 0.52, ttkMed: 0.88, ttkHeavy: 1.24, dps: 365, dropoffMin: 30, dropoffMax: 50, dropoffMod: 0.53 },
+            { name: "M60", class: "HEAVY", bodyDmg: 20, headDmg: 30, rpm: 580, mag: 70, reload: 3.55, ttkLight: 0.72, ttkMed: 1.24, ttkHeavy: 1.76, dps: 290, dropoffMin: 25, dropoffMax: 35, dropoffMod: 0.50 },
             { name: "MGL-32", class: "HEAVY", bodyDmg: 83, headDmg: null, rpm: 90, mag: 6, reload: 3.10, ttkLight: 0.67, ttkMed: 2.00, ttkHeavy: 2.67, dps: 124, dropoffMin: null, dropoffMax: null, dropoffMod: null },
             { name: "SA1216", class: "HEAVY", bodyDmg: 72, headDmg: null, rpm: 190, mag: 16, reload: 3.25, ttkLight: 0.63, ttkMed: 0.95, ttkHeavy: 1.75, dps: 228, dropoffMin: 12.5, dropoffMax: 20, dropoffMod: 0.67 },
-            { name: "ShAK-50", class: "HEAVY", bodyDmg: 30, headDmg: 45, rpm: 420, mag: 20, reload: 3.20, ttkLight: 0.57, ttkMed: 1.14, ttkHeavy: 1.57, dps: 210, dropoffMin: 15, dropoffMax: 25, dropoffMod: 0.67 },
+            { name: "ShAK-50", class: "HEAVY", bodyDmg: 30, headDmg: 45, rpm: 420, mag: 20, reload: 3.20, ttkLight: 0.57, ttkMed: 1.14, ttkHeavy: 1.57, dps: 315, dropoffMin: 15, dropoffMax: 25, dropoffMod: 0.67 },
             { name: "Sledgehammer", class: "HEAVY", bodyDmg: 100, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
             { name: "Spear", class: "HEAVY", bodyDmg: 65, headDmg: null, rpm: null, mag: null, reload: null, ttkLight: null, ttkMed: null, ttkHeavy: null, dps: null, dropoffMin: null, dropoffMax: null, dropoffMod: null, isMelee: true },
         ];
@@ -363,22 +370,13 @@
                             <Shield size={20} className={className === 'LIGHT' ? 'text-yellow-400' : className === 'MEDIUM' ? 'text-orange-400' : 'text-purple-400'} />
                             {className} Build
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <StatRankCard
-                                title={`Fastest TTK (${targetLabel})`}
-                                weapon={data.fastestTTK}
-                                value={`${ttkValue}s`}
-                                subLabel="Seconds"
-                                colorClass="text-finals-red"
-                            />
-                            <StatRankCard
-                                title="Highest DPS"
-                                weapon={data.highestDPS}
-                                value={data.highestDPS?.dps}
-                                subLabel="DPS"
-                                colorClass="text-yellow-500"
-                            />
-                        </div>
+                        <StatRankCard
+                            title={`Fastest TTK (${targetLabel})`}
+                            weapon={data.fastestTTK}
+                            value={`${ttkValue}s`}
+                            subLabel="Seconds"
+                            colorClass="text-finals-red"
+                        />
                     </div>
                 );
             };
@@ -753,8 +751,8 @@
                                                     <div className="text-white font-mono">{w.reload ? `${w.reload}s` : '-'}</div>
                                                 </div>
                                                 <div>
-                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">DPS</div>
-                                                    <div className="text-yellow-500 font-mono font-bold">{w.dps || '-'}</div>
+                                                    <div className="text-finals-dim text-[10px] uppercase font-bold">Mag DMG</div>
+                                                    <div className="text-yellow-500 font-mono font-bold">{w.mag && w.bodyDmg ? w.mag * w.bodyDmg : '-'}</div>
                                                 </div>
                                             </div>
                                         </div>
