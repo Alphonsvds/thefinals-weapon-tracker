@@ -28,10 +28,10 @@
                             black: '#101010',
                             dark: '#1a1a1a',
                             panel: '#262626',
-                            red: '#d0021b', // The Finals Red
+                            red: '#ff4757', // Brighter red for accessibility
                             text: '#e8e8e8',
                             dim: '#888888',
-                            tierS: '#d0021b',
+                            tierS: '#ff4757',
                             tierA: '#ff9f0a',
                             tierB: '#f2f2f2',
                             tierC: '#888888',
@@ -65,7 +65,7 @@
             background: #1a1a1a;
         }
         ::-webkit-scrollbar-thumb {
-            background: #d0021b;
+            background: #ff4757;
             border-radius: 2px;
         }
         .finals-card {
@@ -75,7 +75,7 @@
             transition: all 0.2s ease;
         }
         .finals-card:hover {
-            border-left: 4px solid #d0021b;
+            border-left: 4px solid #ff4757;
             transform: translateX(4px);
         }
         .dashed-bg {
@@ -460,15 +460,12 @@
             }, [weapons, tierTarget]);
 
             // --- Components ---
-            const StatRankCard = ({ title, weapon, value, subLabel, icon: Icon, colorClass }) => (
-                <div className="bg-finals-panel p-4 border border-white/10 relative overflow-hidden group">
-                    <div className={`absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}>
-                        <Icon size={48} />
-                    </div>
+            const StatRankCard = ({ title, weapon, value, subLabel, colorClass }) => (
+                <div className="bg-finals-panel p-4 border border-white/10">
                     <div className="text-finals-dim text-xs font-bold tracking-widest uppercase mb-1">{title}</div>
                     <div className="text-2xl font-black text-white truncate">{weapon?.name || "N/A"}</div>
                     <div className="flex items-end gap-2 mt-2">
-                        <div className={`text-4xl font-bold leading-none ${colorClass.replace('text-', 'text-')}`}>
+                        <div className={`text-4xl font-bold leading-none ${colorClass}`}>
                             {value}
                         </div>
                         <div className="text-finals-dim text-sm font-semibold mb-1">{subLabel}</div>
@@ -487,20 +484,18 @@
                             {className} Build
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <StatRankCard 
+                            <StatRankCard
                                 title={`Fastest TTK (${targetLabel})`}
-                                weapon={data.fastestTTK} 
-                                value={`${ttkValue}s`} 
+                                weapon={data.fastestTTK}
+                                value={`${ttkValue}s`}
                                 subLabel="Seconds"
-                                icon={Timer}
                                 colorClass="text-finals-red"
                             />
-                            <StatRankCard 
-                                title="Highest Output" 
-                                weapon={data.highestDPS} 
-                                value={data.highestDPS?.dps} 
+                            <StatRankCard
+                                title="Highest DPS"
+                                weapon={data.highestDPS}
+                                value={data.highestDPS?.dps}
                                 subLabel="DPS"
-                                icon={Zap}
                                 colorClass="text-yellow-500"
                             />
                         </div>
@@ -602,16 +597,16 @@
                                     <line x1="75" y1="0" x2="75" y2="100" stroke="#333" strokeWidth="0.5" strokeDasharray="2,2" />
 
                                     {/* Fill area */}
-                                    <path d={fillD} fill="rgba(208, 2, 27, 0.2)" />
+                                    <path d={fillD} fill="rgba(255, 71, 87, 0.2)" />
 
                                     {/* Damage curve line */}
-                                    <path d={pathD} fill="none" stroke="#d0021b" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                                    <path d={pathD} fill="none" stroke="#ff4757" strokeWidth="2" vectorEffect="non-scaling-stroke" />
 
                                     {/* Dropoff start marker */}
                                     <circle cx={minRangePct} cy={0} r="3" fill="#fff" vectorEffect="non-scaling-stroke" />
 
                                     {/* Dropoff end marker */}
-                                    <circle cx={maxRangePct} cy={100 - minDmgPct} r="3" fill="#d0021b" vectorEffect="non-scaling-stroke" />
+                                    <circle cx={maxRangePct} cy={100 - minDmgPct} r="3" fill="#ff4757" vectorEffect="non-scaling-stroke" />
                                 </svg>
                             </div>
 
